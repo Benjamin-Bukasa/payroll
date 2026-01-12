@@ -1,45 +1,84 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import prisma from "../config/db.js";
+import { PLAN_LIMITS, calculatePrice } from "../utils/subscription.js";
 import { signAccessToken, signRefreshToken, verifyToken } from "../utils/jwt.js";
 import { accessCookieOptions, refreshCookieOptions } from "../utils/cookies.js";
 import { sendEmail } from "../services/email.js";
 
 
-//register a new user
+
 export const register = async (req, res) => {
+  const {
+    firstname,
+    lastname,
+    email,
+    password,
+    companyName,
+  } = req.body;
 
-    const { firstname, lastname, username, phone, gender, dateBirth, email, password } = req.body;
+  const emailExist = await prisma.user.findUnique({ where: { email } });
+  if (emailExist) {
+    return res.status(400).json({ message: "Email already used" });
+  }
 
-    const emailExist = await prisma.user.findUnique({ where: { email } });
-    if (emailExist) return res.status(400).json({ message: "Email already used" });
+  const hash = await bcrypt.hash(password, 12);
+  const verificationToken = crypto.randomBytes(32).toString("hex");
 
-    const hash = await bcrypt.hash(password, 12);
-    const verificationToken = crypto.randomBytes(32).toString("hex");
+  const now = new Date();
+  const trialEnd = new Date(now);
+  trialEnd.setDate(trialEnd.getDate() + 30);
 
-    await prisma.user.create({
-        data: { 
-            firstname,
-            lastname, 
-            username, 
-            phone, 
-            gender, 
-            dateBirth,
-            email, 
-            password: hash, 
-            verificationToken }
+  await prisma.$transaction(async (tx) => {
+    const company = await tx.company.create({
+      data: {
+        name: companyName,
+        email,
+        phone: "",
+        address: "",
+      },
     });
 
-    const link = `${process.env.FRONTEND_URL}/verify?token=${verificationToken}`;
-
-    await sendEmail({
-        to: email,
-        subject: "Verify your account",
-        html: `<a href="${link}">Verifier votre compte neosys ici</a>`
+    await tx.subscription.create({
+      data: {
+        plan: "TRIAL",
+        startDate: now,
+        endDate: trialEnd,
+        companyId: company.id,
+      },
     });
 
-    res.status(201).json({ message: "Check your email to verify account" });
+    await tx.user.create({
+      data: {
+        firstname,
+        lastname,
+        email,
+        password: hash,
+        role: "ADMIN",
+        companyId: company.id,
+        verificationToken,
+      },
+    });
+  });
+
+  const link = `${process.env.FRONTEND_URL}/verify?token=${verificationToken}`;
+
+  await sendEmail({
+    to: email,
+    subject: "Welcome to your 30-day free trial 🎉",
+    html: `
+      <p>Your TRIAL ends on <strong>${trialEnd.toDateString()}</strong></p>
+      <p>No payment required now.</p>
+      <a href="${link}">Verify your account</a>
+    `,
+  });
+
+  res.status(201).json({
+    message: "Trial account created. Check your email.",
+    trialEndsAt: trialEnd,
+  });
 };
+
 
 
 export const verifyEmail = async (req, res) => {
@@ -61,50 +100,104 @@ export const verifyEmail = async (req, res) => {
 
 
 export const login = async (req, res) => {
-      const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-      const user = await prisma.user.findUnique({
-        where: { email },
+    // ===============================
+    // VALIDATION INPUT
+    // ===============================
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required",
       });
+    }
 
-      if (!user || !user.isVerified) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
+    // ===============================
+    // FIND USER
+    // ===============================
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-      if (!user.isActive) {
-        return res.status(403).json({
-          message: "Account is blocked. Contact administrator.",
-        });
-      }
+    if (!user) {
+      return res.status(401).json({
+        message: "Invalid credentials",
+      });
+    }
 
-      const match = await bcrypt.compare(password, user.password);
-      if (!match) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
+    // ===============================
+    // ACCOUNT CHECKS
+    // ===============================
+    if (!user.isVerified) {
+      return res.status(403).json({
+        message: "Please verify your email before login",
+      });
+    }
 
-      const accessToken = signAccessToken({
+    if (!user.isActive) {
+      return res.status(403).json({
+        message: "Account is blocked. Contact administrator.",
+      });
+    }
+
+    // ===============================
+    // PASSWORD CHECK
+    // ===============================
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({
+        message: "Adresse email ou mot de passe incorrect",
+      });
+    }
+
+    // ===============================
+    // TOKEN GENERATION
+    // ===============================
+    const accessToken = signAccessToken({
+      userId: user.id,
+      role: user.role,
+    });
+
+    const refreshToken = signRefreshToken(user.id);
+
+    // ===============================
+    // STORE REFRESH TOKEN
+    // ===============================
+    await prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
         userId: user.id,
-        role: user.role,
-      });
+        expiresAt: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000
+        ),
+      },
+    });
 
-      const refreshToken = signRefreshToken(user.id);
-
-      await prisma.refreshToken.create({
-        data: {
-          token: refreshToken,
-          userId: user.id,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        },
-      });
-
-      res
-        .cookie("access_token", accessToken, accessCookieOptions)
-        .cookie("refresh_token", refreshToken, refreshCookieOptions)
-        .json({
+    // ===============================
+    // RESPONSE + COOKIES
+    // ===============================
+    res
+      .cookie("access_token", accessToken, accessCookieOptions)
+      .cookie("refresh_token", refreshToken, refreshCookieOptions)
+      .status(200)
+      .json({
+        user: {
           id: user.id,
           email: user.email,
+          firstname: user.firstname,
+          lastname: user.lastname,
           role: user.role,
-        });
+        },
+        // ⚠️ DEV ONLY (à retirer en prod)
+        accessToken,
+        refreshToken,
+      });
+  } catch (error) {
+    console.error("LOGIN ERROR:", error);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 };
 
 
@@ -148,10 +241,12 @@ export const refresh = async (req, res) => {
 };
 
 
-export const me = async (req,res)=>{
-    res.json(req.user);
+export const me = async (req, res) => {
+  // req.user est injecté par authMiddleware
+  res.status(200).json({
+    user: req.user,
+  });
 };
-
 
 
 export const forgotPassword = async (req, res) => {
@@ -316,4 +411,36 @@ export const googleLogin = async (req, res) => {
   }
 };
 
+export const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+  });
+
+  const match = await bcrypt.compare(
+    currentPassword,
+    user.password
+  );
+
+  if (!match) {
+    return res.status(400).json({
+      message: "Current password is incorrect",
+    });
+  }
+
+  const hash = await bcrypt.hash(newPassword, 12);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password: hash,
+      mustChangePassword: false, // DÉBLOCAGE
+    },
+  });
+
+  res.json({
+    message: "Password changed successfully",
+  });
+};
 

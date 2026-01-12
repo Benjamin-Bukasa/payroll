@@ -1,0 +1,170 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  //user infos
+  id                            String           @id @default(uuid())
+  email                         String           @unique
+  password                      String
+  username                      String?  
+  firstname                     String
+  lastname                      String
+  gender                        String
+  dateBirth                     String
+  phone                         String
+  adress                        String?
+  avatar                        String?
+
+
+  //job infos
+  entrepriseId                  String    
+  role                          Role        @default(USER)
+  position                      String?
+  department                    String?
+  contractType                  String?
+  dateHire                      String?
+  dateEnd                       String?
+
+  //auth infos
+  isVerified             Boolean  @default(false)
+  isActive               Boolean  @default(false)
+  verificationToken      String?
+  resetPasswordToken     String?
+  resetPasswordExpires   DateTime?
+  googleId               String?
+
+  //relation
+  refreshTokens          RefreshToken[]
+  company                Company[]
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+}
+
+
+model Company {
+  //company infos
+  id                            String        @id @default(uuid())
+  companyName                   String
+  email                         String        @unique
+  phone                         String
+  adress                        String
+  idNat                         String?
+  rccm                          String?
+  numImpot                      String?
+
+  //Relation
+  userId                        String
+  user                User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+}
+
+model Clientcompany {
+
+  id                            String        @id @default(uuid())
+  companyName                   String        @unique
+  email                         String        @unique
+  adress                        String
+  idNat                         String?
+  rccm                          String?
+  numImpot                      String?
+  managerHost                   String?
+
+  //relation
+
+
+}
+
+
+model Employee{
+
+  id                           String       @id @default(uuid())
+  firstname                    String
+  name                         String
+  lastname                     String
+  gender                       String
+  placeofbirth                 String
+  datebirth                    DateTime
+  civilStatus                  String
+  children                     Int
+  adress                       String?
+  phone                        String
+  email                        String?
+  familyContactName            String?
+  familyContactRelation        String?
+  familyContactPhone           String?
+
+  //job infos
+  position                     String
+  department                   String
+  location                     String
+  baseSalary                   Float
+  manager                      String
+
+
+  //company relation
+
+
+  //manager relation
+
+
+  //Workschedule relation
+
+
+
+  //attendance relation
+
+
+  //payment relation
+
+}
+
+model Dayoff {
+
+  id                          String    @id   @default(uuid())
+  choosedDay                  String
+  
+  clientcompanyid             String
+
+}
+
+
+
+
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  USER
+}
+
+enum PaymentMethod {
+  CASH
+  MOBILE_MONEY
+  BANK
+  OTHER
+}

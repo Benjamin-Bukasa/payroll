@@ -1,12 +1,22 @@
 import jwt from "jsonwebtoken";
 
 /**
- * Access Token (court)
- * Contient userId + role
+ * =====================================
+ * ACCESS TOKEN (court)
+ * - Contient userId + role
+ * - Utilisé pour l'auth + RBAC
+ * =====================================
  */
 export const signAccessToken = ({ userId, role }) => {
+  if (!userId || !role) {
+    throw new Error("signAccessToken requires userId and role");
+  }
+
   return jwt.sign(
-    { userId, role },
+    {
+      userId,
+      role,
+    },
     process.env.JWT_ACCESS_SECRET,
     {
       expiresIn: "15m",
@@ -15,12 +25,21 @@ export const signAccessToken = ({ userId, role }) => {
 };
 
 /**
- * Refresh Token (long)
- * Contient uniquement userId
+ * =====================================
+ * REFRESH TOKEN (long)
+ * - Contient uniquement userId
+ * - Stocké en DB
+ * =====================================
  */
 export const signRefreshToken = (userId) => {
+  if (!userId) {
+    throw new Error("signRefreshToken requires userId");
+  }
+
   return jwt.sign(
-    { userId },
+    {
+      userId,
+    },
     process.env.JWT_REFRESH_SECRET,
     {
       expiresIn: "7d",
@@ -29,8 +48,14 @@ export const signRefreshToken = (userId) => {
 };
 
 /**
- * Vérification générique
+ * =====================================
+ * VÉRIFICATION GÉNÉRIQUE JWT
+ * =====================================
  */
 export const verifyToken = (token, secret) => {
+  if (!token || !secret) {
+    throw new Error("verifyToken requires token and secret");
+  }
+
   return jwt.verify(token, secret);
 };
