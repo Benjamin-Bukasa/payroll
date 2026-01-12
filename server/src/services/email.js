@@ -1,20 +1,20 @@
 import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
+export const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
-  port: 587,
-  secure: false,
+  port: Number(process.env.EMAIL_PORT),
+  secure: false, // true uniquement pour port 465
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 export const sendEmail = async ({ to, subject, html }) => {
   await transporter.sendMail({
-    from: `"Auth System" <${process.env.EMAIL_USER}>`,
+    from: `"Payroll App" <${process.env.EMAIL_USER}>`,
     to,
     subject,
-    html
+    html,
   });
 };

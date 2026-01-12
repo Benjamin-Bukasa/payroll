@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,78 +7,588 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-model Company {
-  //company infos
-  id                            String        @id @default(uuid())
-  companyName                   String
-  email                         String        @unique
-  phone                         String
-  adress                        String
-  idNat                         String?
-  rccm                          String?
-  numImpot                      String?
-
-  //user Infos
-  userId                        String
-  user                User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-}
-
-
-model User {
-  //user infos
-  id                            String           @id @default(uuid())
-  email                         String           @unique
-  password                      String
-  username                      String?  
-  firstname                     String
-  lastname                      String
-  gender                        String
-  dateBirth                     String
-  phone                         String
-  adress                        String?
-  avatar                        String?
-
-
-  //job infos
-  entrepriseId                  String    
-  role                          Role        @default(USER)
-  position                      String?
-  department                    String?
-  contractType                  String?
-  dateHire                      String?
-  dateEnd                       String?
-
-  //auth infos
-  isVerified             Boolean  @default(false)
-  isActive               Boolean  @default(false)
-  verificationToken      String?
-  resetPasswordToken     String?
-  resetPasswordExpires   DateTime?
-  googleId               String?
-
-  refreshTokens          RefreshToken[]
-  company                Company[]
-
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-
-}
-
-
-model RefreshToken {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-}
+//////////////////////////
+// ENUMS
+//////////////////////////
 
 enum Role {
   SUPER_ADMIN
   ADMIN
   MANAGER
   USER
+}
+
+enum PlanType {
+  TRIAL
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
+enum PayrollStatus {
+  DRAFT
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  MOBILE_MONEY
+  BANK
+  OTHER
+}
+
+enum WeekDay {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  ON_LEAVE
+}
+
+enum LateStatus {
+  ON_TIME
+  LATE
+}
+
+enum ActivitySector {
+  GENERAL
+  MINING
+  AGRICULTURE
+  INDUSTRY
+  SERVICES
+  CONSTRUCTION
+  TRANSPORT
+  ENERGY
+}
+
+
+enum Devise {
+  CDF
+  EUR
+  USD
+}
+
+enum PayrollValidationStatus {
+  DRAFT        // générée, modifiable
+  VALIDATED    // validée RH / Finance
+  CLOSED       // clôturée (verrouillée)
+}
+
+enum Status {
+  ACTIF
+  INACTIF
+  SUSPENDU
+}
+
+
+
+//////////////////////////
+// USER (SaaS User)
+//////////////////////////
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password      String
+  firstname     String
+  lastname      String
+  phone         String?
+  avatar        String?
+
+  role          Role     @default(USER)
+  isActive      Boolean  @default(true)
+  isVerified    Boolean  @default(false)
+
+  // 🔐 Sécurité
+  verificationToken     String?
+  resetPasswordToken    String?
+  resetPasswordExpires DateTime?
+
+  // 🔑 Google
+  googleId      String?
+
+  mustChangePassword Boolean  @default(false)
+
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
+
+  clientCompanies ClientCompany[]
+
+  payrollsValidated Payroll[] @relation("PayrollValidatedBy")
+  payrollsClosed   Payroll[] @relation("PayrollClosedBy")
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+
+//////////////////////////
+// COMPANY (SaaS Account)
+//////////////////////////
+
+model Company {
+  id              String   @id @default(uuid())
+  name            String
+  email           String   @unique
+  phone           String
+  address         String
+  idNat           String?
+  rccm            String?
+  numImpot        String?
+  logo            String?
+
+  subscription    Subscription?
+  users           User[]
+  clientCompanies ClientCompany[]
+
+  createdAt       DateTime @default(now())
+}
+
+//////////////////////////
+// SUBSCRIPTION
+//////////////////////////
+
+model Subscription {
+  id              String   @id @default(uuid())
+  plan            PlanType
+  isActive        Boolean  @default(true)
+  startDate       DateTime
+  endDate         DateTime?
+
+  trialNotified14 Boolean  @default(false)
+  trialNotified7  Boolean  @default(false)
+  trialNotified0  Boolean  @default(false)
+
+  companyId       String   @unique
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+
+//////////////////////////
+// CLIENT COMPANY
+//////////////////////////
+
+model ClientCompany {
+  id                  String   @id @default(uuid())
+  companyName         String
+  email               String?
+  address             String
+  idNat               String?
+  rccm                String?
+  numImpot            String?
+  seal                String?
+  logo                String?
+  activitySector      ActivitySector @default(GENERAL)
+
+  companyId           String
+  company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  managerId           String?
+  manager             User?    @relation(fields: [managerId], references: [id], onDelete: Cascade)
+
+  employees           Employee[]
+  schedule            ClientCompanySchedule?
+  hrSettings          HRSettings?
+
+  createdAt           DateTime @default(now())
+
+  payrollSettings PayrollSetting[]
+}
+
+//////////////////////////
+// DAY ON/OFF (jours ouvrables et non ouvrables)
+//////////////////////////
+
+model ClientCompanySchedule {
+  id              String   @id @default(uuid())
+
+  monday          Boolean  @default(true)
+  tuesday         Boolean  @default(true)
+  wednesday       Boolean  @default(true)
+  thursday        Boolean  @default(true)
+  friday          Boolean  @default(true)
+  saturday        Boolean  @default(false)
+  sunday          Boolean  @default(false)
+
+  clientCompanyId String   @unique
+  clientCompany   ClientCompany @relation(fields: [clientCompanyId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+
+//////////////////////////
+// EMPLOYEE
+//////////////////////////
+
+model Employee {
+  id                           String   @id @default(uuid())
+  firstname                    String
+  lastname                     String
+  gender                       String
+  placeofbirth                 String
+  dateOfBirth                  DateTime
+  civilStatus                  String
+  children                     Int
+  adress                       String?
+  familyContactName            String?
+  familyContactRelation        String?
+  familyContactPhone           String?
+  phone                        String?
+  email                        String?
+  status                       Status @default(ACTIF) 
+  avatar                       String?
+
+  position                     String
+  department                   String
+
+
+  //  RELATION SMIG (AJOUT)
+  baseSalary                   Float
+  smigId                       String
+  smig                         Smig     @relation(fields: [smigId], references: [id])
+
+  clientCompanyId              String
+  clientCompany   ClientCompany @relation(fields: [clientCompanyId], references: [id], onDelete: Cascade)
+
+  schedules       EmployeeSchedule[]
+  attendances     Attendance[]
+  payrolls        Payroll[]
+
+  createdAt       DateTime @default(now())
+}
+
+//////////////////////////
+// EMPLOYEE SCHEDULE (horaire par jour)
+//////////////////////////
+
+model EmployeeSchedule {
+  id        String   @id @default(uuid())
+
+  startDay  WeekDay
+  endDay    WeekDay
+
+  startTime String   // "22:00"
+  endTime   String   // "06:00"
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, startDay, startTime])
+}
+
+
+//////////////////////////
+// ATTENDANCE (Pointage)
+//////////////////////////
+
+model Attendance {
+  id              String   @id @default(uuid())
+
+  // Jour de début et fin (shift nuit)
+  startedDay      WeekDay
+  endedDay        WeekDay?
+
+  // Horaires réels
+  startTime       DateTime
+  endTime         DateTime?
+
+  // Calculs
+  workedHours     Float?
+  normalHours     Float?
+  overtimeHours   Float?
+  overtimeRate    Float?
+
+  // Statuts
+  attendanceStatus AttendanceStatus @default(PRESENT)
+  lateStatus       LateStatus       @default(ON_TIME)
+
+  // Relations
+  employeeId      String
+  employee        Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([employeeId, startTime])
+}
+
+
+
+//////////////////////////
+// PAYROLL PERIOD
+//////////////////////////
+
+model PayrollPeriod {
+  id          String   @id @default(uuid())
+  label       String
+  startDate   DateTime
+  endDate     DateTime
+  isClosed    Boolean  @default(false)
+
+  payrolls    Payroll[]
+
+  createdAt   DateTime @default(now())
+}
+
+//////////////////////////
+// PAYROLL
+//////////////////////////
+
+model Payroll {
+  id            String   @id @default(uuid())
+
+  // =========================
+  // RELATIONS
+  // =========================
+  employeeId    String
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  periodId      String
+  period        PayrollPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+
+  // =========================
+  // STATUTS
+  // =========================
+
+  // Cycle de validation (RH / Finance)
+  validationStatus PayrollValidationStatus @default(DRAFT)
+
+  // Paiement effectif
+  paymentStatus    PayrollStatus           @default(DRAFT)
+  paymentMethod    PaymentMethod?
+  paymentDate      DateTime?
+
+  // =========================
+  // MONTANTS (STOCKÉS, JAMAIS RECALCULÉS)
+  // =========================
+
+  grossSalary      Float
+  netSalary        Float
+
+  // Détails utiles (optionnels mais très pro)
+  totalDeductions  Float?
+  totalEarnings    Float?
+
+  // =========================
+  // PDF
+  // =========================
+  pdfPath          String?
+
+  // =========================
+  // TRAÇABILITÉ
+  // =========================
+
+  validatedAt      DateTime?
+  validatedById    String?
+  validatedBy      User? @relation("PayrollValidatedBy", fields: [validatedById], references: [id])
+
+  closedAt         DateTime?
+  closedById       String?
+  closedBy         User? @relation("PayrollClosedBy", fields: [closedById], references: [id])
+
+  // =========================
+  // HISTORIQUE
+  // =========================
+  taxes            PayrollTax[]
+  history          PayrollHistory[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+
+//////////////////////////
+// PAYROLL TAX (IPR, CNSS, etc.)
+//////////////////////////
+
+model PayrollTax {
+  id          String   @id @default(uuid())
+  label       String
+  rate        Float
+  amount      Float
+
+  payrollId   String
+  payroll     Payroll @relation(fields: [payrollId], references: [id], onDelete: Cascade)
+}
+
+
+
+model HRSettings {
+  id                     String  @id @default(uuid())
+
+  // Gestion des retards / absences
+  lateToleranceMinutes   Int     @default(15)   // minutes tolérées
+  absenceAfterMinutes    Int     @default(120)  // considéré absent après X minutes
+
+  // Travail de nuit
+  nightStartHour         Int     @default(22)   // 22h
+  nightEndHour           Int     @default(6)    // 06h
+
+  // Heures supplémentaires (RDC)
+  overtimeDayRate        Float   @default(1.3)  // 130%
+  overtimeNightRate      Float   @default(1.6)  // 160%
+  overtimeHolidayRate    Float   @default(2.0)  // 200%
+
+  //Relation ClientCompany
+  clientCompanyId        String  @unique
+  clientCompany          ClientCompany @relation(fields: [clientCompanyId], references: [id], onDelete: Cascade)
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+
+model Smig {
+  id        String  @id @default(uuid())
+
+  categorie String
+  echelon   String
+  tension   String
+  colonne   String
+
+  dailyRate Float   // SMIG journalier en FC
+
+  isActive  Boolean @default(true)
+
+  employees Employee[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([categorie, echelon, tension, colonne])
+}
+
+model PayrollSetting {
+  id String @id @default(uuid())
+
+  // =========================
+  // Relation
+  // =========================
+  clientCompanyId String @unique
+  clientCompany   ClientCompany @relation(fields: [clientCompanyId], references: [id], onDelete: Cascade)
+
+  // =========================
+  // SALAIRE & ALLOCATIONS
+  // =========================
+
+  housingRate              Float @default(0.30)  // 30% logement légal
+  maxChildrenAllowance     Int   @default(9)
+  familyAllowanceDivider   Int   @default(27)    // 1/27 SMIG journalier
+
+  // Transport
+  taxiFare                 Float @default(0)     // prix 1 course
+  taxiCoursesPerDay        Int   @default(6)
+
+  // Soins médicaux
+  medicalAllowance         Float @default(0)
+
+  // =========================
+  // DÉDUCTIONS EMPLOYÉ
+  // =========================
+
+  // CNSS (employé)
+  cnssQPORate              Float @default(0.05)  // 5%
+
+  // IPR
+  iprReductionRate         Float @default(0.02)  // 2% par enfant
+  iprMaxChildren           Int   @default(9)
+
+  // Syndicat & avances
+  defaultUnionFee          Float @default(0)
+  allowSalaryAdvance       Boolean @default(true)
+
+  // =========================
+  // EXPATRIÉ / SECTEUR
+  // =========================
+
+  isMiningSector            Boolean @default(false)
+  miningSectorMaxYears      Int     @default(11)
+
+  iereRate                  Float   @default(0.25)  // 25%
+  iereMiningRate            Float   @default(0.125) // 12.5%
+
+  // =========================
+  // CHARGES EMPLOYEUR
+  // =========================
+
+  // CNSS employeur
+  cnssRiskEmployerRate      Float @default(0.015) // 1.5%
+  cnssRetirementRate        Float @default(0.05)  // 5%
+  cnssFamilyRate            Float @default(0.065) // 6.5%
+
+  // ONEM & INPP
+  onemRate                  Float @default(0.0005) // 0.05%
+
+  inppRateSmall             Float @default(0.03)   // 0–50 employés
+  inppRateMedium            Float @default(0.02)   // 51–300
+  inppRateLarge             Float @default(0.01)   // >300
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
+
+
+
+//////////////////////////
+// PAYROLL HISTORY
+//////////////////////////
+
+model PayrollHistory {
+  id          String   @id @default(uuid())
+  action      String
+  oldValue    String?
+  newValue    String?
+  createdAt   DateTime @default(now())
+
+  payrollId   String
+  payroll     Payroll @relation(fields: [payrollId], references: [id], onDelete: Cascade)
+}
+
+//////////////////////////
+// AUDIT LOG (CRUD)
+//////////////////////////
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  action      String
+  entity      String
+  entityId    String
+  createdAt   DateTime @default(now())
+
+  userId      String
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+//////////////////////////
+// REFRESH TOKEN
+//////////////////////////
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  token       String   @unique
+  expiresAt   DateTime
+
+  userId      String
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -1,0 +1,19 @@
+import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary.js";
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "avatars",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+    transformation: [
+      { width: 300, height: 300, crop: "fill" },
+    ],
+  },
+});
+
+export const uploadAvatar = multer({
+  storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+});
