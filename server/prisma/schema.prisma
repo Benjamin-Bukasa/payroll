@@ -108,12 +108,12 @@ model User {
   isActive      Boolean  @default(true)
   isVerified    Boolean  @default(false)
 
-  // 🔐 Sécurité
+  //  Sécurité
   verificationToken     String?
   resetPasswordToken    String?
   resetPasswordExpires DateTime?
 
-  // 🔑 Google
+  //  Google
   googleId      String?
 
   mustChangePassword Boolean  @default(false)

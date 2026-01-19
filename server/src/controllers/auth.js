@@ -241,12 +241,40 @@ export const refresh = async (req, res) => {
 };
 
 
+// controllers/auth.js
 export const me = async (req, res) => {
-  // req.user est injecté par authMiddleware
-  res.status(200).json({
-    user: req.user,
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: {
+      id: true,
+      firstname: true,
+      lastname: true,
+      email: true,
+      avatar: true,
+      role: true,
+      mustChangePassword: true,
+      company: {
+        select: {
+          id: true,
+          name: true,
+          logo: true,
+        },
+      },
+      clientCompanies:{
+        select:{
+          id:true,
+          companyName: true,
+          logo: true,
+          activitySector:true,
+        }
+      },
+      createdAt: true,
+    },
   });
+
+  res.json(user);
 };
+
 
 
 export const forgotPassword = async (req, res) => {

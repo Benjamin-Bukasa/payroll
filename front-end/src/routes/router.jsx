@@ -18,12 +18,18 @@ import Report from "./../pages/dashboard/report";
 import Notifications from './../pages/dashboard/Notifications';
 import Folders from "./../pages/dashboard/Folders";
 import Profile from './../pages/dashboard/Profile';
+import GuestRoute from './GuestRoute';
 
 export const router = createBrowserRouter([
   {
     element: <AuthLayout />,
     children: [
-      { path: "/login", element: <Login /> },
+      { path: "/login", 
+        element:(
+          <GuestRoute>
+            <Login />
+          </GuestRoute>
+        )},
       { path: "/forgot-password", element: <ForgotPassword /> },
     ],
   },
