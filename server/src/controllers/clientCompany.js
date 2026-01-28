@@ -7,39 +7,66 @@ import { createAuditLog } from "../services/audit.js";
 export const createClientCompany = async (req, res) => {
   try {
     const {
-      name,
+      companyName,
       email,
       address,
-      phone,
       idNat,
       rccm,
       numImpot,
+      activitySector,
+      managerId,
     } = req.body;
 
-    if (!name || !address) {
+    if (!req.user?.companyId) {
+      return res.status(403).json({
+        message: "Company context missing",
+      });
+    }
+
+    if (!companyName || !address) {
       return res.status(400).json({
-        message: "name and address are required",
+        message: "companyName and address are required",
+      });
+    }
+
+    //  ANTI-DOUBLON
+    const existing = await prisma.clientCompany.findFirst({
+      where: {
+        companyName: companyName.trim(),
+        companyId: req.user.companyId,
+      },
+    });
+
+    if (existing) {
+      return res.status(409).json({
+        message: "Une entreprise cliente avec ce nom existe déjà",
       });
     }
 
     const clientCompany = await prisma.clientCompany.create({
       data: {
-        name,
-        email,
+        companyName: companyName.trim(),
+        email: email || null,
         address,
-        phone,
-        idNat,
-        rccm,
-        numImpot,
-        companyId: req.user.companyId,
+        idNat: idNat || null,
+        rccm: rccm || null,
+        numImpot: numImpot || null,
+        activitySector: activitySector || "GENERAL",
+
+        company: {
+          connect: { id: req.user.companyId },
+        },
+
+        ...(managerId && {
+          manager: {
+            connect: { id: managerId },
+          },
+        }),
       },
     });
 
-    // 🔁 Créer automatiquement le schedule
     await prisma.clientCompanySchedule.create({
-      data: {
-        clientCompanyId: clientCompany.id,
-      },
+      data: { clientCompanyId: clientCompany.id },
     });
 
     await createAuditLog({
@@ -58,14 +85,21 @@ export const createClientCompany = async (req, res) => {
   }
 };
 
+
 /* ======================================================
-   LIST CLIENT COMPANIES (BY COMPANY)
+   LIST CLIENT COMPANIES 
 ====================================================== */
 export const listClientCompanies = async (req, res) => {
   try {
     const companies = await prisma.clientCompany.findMany({
       where: {
         companyId: req.user.companyId,
+      },
+      include: {
+        manager: true,
+        _count: {
+          select: { employees: true },
+        },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -90,6 +124,7 @@ export const getClientCompanyById = async (req, res) => {
       where: { id: clientCompanyId },
       include: {
         schedule: true,
+        manager: true,
       },
     });
 
@@ -118,13 +153,13 @@ export const updateClientCompany = async (req, res) => {
   try {
     const { clientCompanyId } = req.params;
     const {
-      name,
+      companyName,
       email,
       address,
-      phone,
       idNat,
       rccm,
       numImpot,
+      activitySector,
       managerId,
     } = req.body;
 
@@ -144,14 +179,20 @@ export const updateClientCompany = async (req, res) => {
     const updated = await prisma.clientCompany.update({
       where: { id: clientCompanyId },
       data: {
-        name,
+        companyName,
         email,
         address,
-        phone,
         idNat,
         rccm,
         numImpot,
-        managerId,
+        activitySector,
+
+        //  Manager relation (CORRECT)
+        ...(managerId === null
+          ? { manager: { disconnect: true } }
+          : managerId
+          ? { manager: { connect: { id: managerId } } }
+          : {}),
       },
     });
 

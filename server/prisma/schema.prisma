@@ -148,6 +148,8 @@ model Company {
   rccm            String?
   numImpot        String?
   logo            String?
+  sector         ActivitySector @default(GENERAL)
+  devise         Devise        @default(CDF)
 
   subscription    Subscription?
   users           User[]
@@ -184,6 +186,7 @@ model ClientCompany {
   id                  String   @id @default(uuid())
   companyName         String
   email               String?
+  phone               String?
   address             String
   idNat               String?
   rccm                String?
@@ -570,14 +573,18 @@ model PayrollHistory {
 //////////////////////////
 
 model AuditLog {
-  id          String   @id @default(uuid())
-  action      String
-  entity      String
-  entityId    String
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  action    String
+  entity    String
+  entityId  String
 
-  userId      String
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  oldValue  String?
+  newValue  String?
+
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 //////////////////////////

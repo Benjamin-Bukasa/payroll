@@ -4,9 +4,7 @@ import { useAuthStore } from "../store/authStore";
 const GuestRoute = ({ children }) => {
   const { isAuthenticated, checkingAuth } = useAuthStore();
 
-  if (checkingAuth) {
-    return <div>Chargement...</div>;
-  }
+  if (checkingAuth) return null;
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;

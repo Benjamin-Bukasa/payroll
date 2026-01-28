@@ -3,8 +3,11 @@ import { useAttendanceStore } from "../../../store/attendanceStore";
 import { CalendarX } from "lucide-react";
 
 const MostAbsentEmployeeCard = () => {
-  const attendances = useAttendanceStore((s) => s.attendances);
-  const fetchAttendances = useAttendanceStore((s) => s.fetchAttendances);
+  const attendances =
+    useAttendanceStore((s) => s.attendances) || [];
+  const fetchAttendances = useAttendanceStore(
+    (s) => s.fetchAttendances
+  );
   const loading = useAttendanceStore((s) => s.loading);
 
   useEffect(() => {
@@ -12,6 +15,8 @@ const MostAbsentEmployeeCard = () => {
   }, [fetchAttendances]);
 
   const mostAbsent = useMemo(() => {
+    if (!Array.isArray(attendances)) return null;
+
     const now = new Date();
     const month = now.getMonth();
     const year = now.getFullYear();
@@ -20,6 +25,7 @@ const MostAbsentEmployeeCard = () => {
 
     attendances.forEach((att) => {
       if (att.attendanceStatus !== "ABSENT") return;
+      if (!att.employee) return;
 
       const date = new Date(att.startTime);
 
@@ -28,7 +34,6 @@ const MostAbsentEmployeeCard = () => {
         date.getFullYear() === year
       ) {
         const emp = att.employee;
-        if (!emp) return;
 
         if (!absenceMap[emp.id]) {
           absenceMap[emp.id] = {
@@ -36,6 +41,7 @@ const MostAbsentEmployeeCard = () => {
             count: 0,
           };
         }
+
         absenceMap[emp.id].count++;
       }
     });

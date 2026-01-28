@@ -30,11 +30,12 @@ const LoginLeft = () => {
   const setRememberMe = useAuthStore((s) => s.setRememberMe);
 
 
-  const onSubmit = async (data) => {
-    await login(data);
-    console.log();
-    navigate("/dashboard")
-  };
+const onSubmit = async (data) => {
+  const success = await login(data);
+  if (success) {
+    navigate("/dashboard");
+  }
+};
 
   return (
     <div className="sm:w-full md:w-full xl:w-1/2 sm:h-screen md:h-screen xl:h-screen sm:flex md:flex xl:flex sm:flex-col md:flex-col xl:flex-col sm:justify-between md:justify-between xl:justify-between sm:items-center md:items-center xl:items-center md:px-4 xl:px-8 font-inter">

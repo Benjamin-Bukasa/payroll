@@ -3,7 +3,7 @@ import React from 'react';
 
 const ScrollArea = ({children, className}) => {
   return (
-    <div className={`${className} overflow-y-auto custom-scroll border rounded-lg`}>
+    <div className={`${className} sm:overflow-x-auto sm:custom-scroll overflow-y-auto custom-scroll border rounded-lg`}>
         {children}
     </div>
   );

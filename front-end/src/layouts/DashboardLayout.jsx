@@ -10,7 +10,7 @@ const DashboardLayout = () => {
 
   return (
     <>
-      <section className="xl:w-full xl:h-screen xl:flex font-inter">
+      <section className="h-screen xl:w-full xl:h-screen xl:flex font-inter">
         <Sidebar/>
         <main className={`xl:flex-1 xl:flex xl:flex-col transition-all duration-300 ease-in-out ${open ?"ml-64":"ml-20"}`}>
           <Navbar/>

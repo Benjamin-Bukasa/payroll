@@ -20,6 +20,9 @@ import Folders from "./../pages/dashboard/Folders";
 import Profile from './../pages/dashboard/Profile';
 import GuestRoute from './GuestRoute';
 
+import ClientCompany from "../components/blocs/Companies/ClientCompany";
+
+
 export const router = createBrowserRouter([
   {
     element: <AuthLayout />,
@@ -42,13 +45,28 @@ export const router = createBrowserRouter([
         children: [
           { path: "/dashboard", element: <Home /> },
           { path: "/employees", element: <Employees /> },
-          { path: "/client-companies", element: <ClientCompanies /> },
+          { path: "/client-companies", element: <ClientCompanies />,},
+          {path: "/client-companies/:clientCompanyId", element: <ClientCompany />},
           { path: "/attendance", element: <Attendance /> },
           { path: "/leaves", element: <Leaves/> },
           { path: "/payroll", element: <Payroll /> },
           { path: "/report", element: <Report /> },
           { path: "/notifications", element: <Notifications/> },
-          { path: "/settings", element: <Settings/> },
+          { 
+            path: "/settings", 
+            element: <Settings/>,
+            children:[
+              {index: true, element: <div>Select a setting option</div>},
+              {element: <div>Profile Settings</div>, path: "profile"},
+              {element: <div>Account Settings</div>, path: "company"},
+              {element: <div>Billing Settings</div>, path: "billing"},
+              {element: <div>Security Settings</div>, path: "security"},
+              {element: <div>Notifications Settings</div>, path: "notifications"},
+              {element: <div>Payroll Settings</div>, path: "payroll"},
+              {element: <div>API Settings</div>, path: "api"},
+
+            ]
+           },
           { path: "/folders", element: <Folders/> },
           { path: "/profile", element: <Profile/> },
         ],

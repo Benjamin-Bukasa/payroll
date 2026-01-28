@@ -11,13 +11,12 @@ export const useAuthStore = create(
       checkingAuth: true,
       error: null,
 
-      rememberMe: true,
+      rememberMe: false,
 
       setRememberMe: (value) => set({ rememberMe: value }),
-
       clearError: () => set({ error: null }),
 
-      // 🔄 Vérifier l'utilisateur connecté
+      // 🔄 Vérifier session
       fetchMe: async () => {
         try {
           const res = await api.get("/auth/me");
@@ -41,11 +40,10 @@ export const useAuthStore = create(
           set({ loading: true, error: null });
 
           await api.post("/auth/login", credentials);
-
-          await new Promise((r) => setTimeout(r, 0));
           await get().fetchMe();
 
           set({ loading: false });
+          return true;
         } catch (err) {
           set({
             error:
@@ -53,33 +51,39 @@ export const useAuthStore = create(
               "Email ou mot de passe incorrect",
             loading: false,
           });
+          return false;
         }
       },
 
-      // 🔐 Google Login
+      // 🔐 Google login
       googleLogin: async (idToken) => {
         try {
           set({ loading: true, error: null });
 
           await api.post("/auth/google", { token: idToken });
-
-          await new Promise((r) => setTimeout(r, 0));
           await get().fetchMe();
 
           set({ loading: false });
+          return true;
         } catch {
           set({
             error: "Connexion Google échouée",
             loading: false,
           });
+          return false;
         }
       },
 
-      // 🚪 Logout + sync multi-onglet
-      logout: async () => {
-        await api.post("/auth/logout");
+      // 🚪 Logout (API optionnelle)
+      logout: async (force = false) => {
+        try {
+          if (!force) {
+            await api.post("/auth/logout");
+          }
+        } catch {
+          // ignore
+        }
 
-        // 🔔 notifier les autres onglets
         localStorage.setItem(
           "neopayroll-logout",
           Date.now().toString()
@@ -88,6 +92,7 @@ export const useAuthStore = create(
         set({
           user: null,
           isAuthenticated: false,
+          checkingAuth: false,
         });
       },
     }),

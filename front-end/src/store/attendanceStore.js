@@ -9,10 +9,13 @@ export const useAttendanceStore = create((set) => ({
   fetchAttendances: async () => {
     try {
       set({ loading: true, error: null });
-      const data = await getAttendances();
+
+      const attendances = await getAttendances();
 
       set({
-        attendances: data,
+        attendances: Array.isArray(attendances)
+          ? attendances
+          : [],
         loading: false,
       });
     } catch (err) {

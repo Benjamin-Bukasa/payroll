@@ -3,6 +3,7 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./routes/router";
 import { useAuthStore } from "./store/authStore";
 import "./index.css";
+import ToastContainer from './components/ui/toastContainer';
 
 function App() {
   const fetchMe = useAuthStore((s) => s.fetchMe);
@@ -14,20 +15,20 @@ function App() {
 
     const syncLogout = (event) => {
       if (event.key === "neopayroll-logout") {
-        logout();
+        logout(true);
       }
     };
 
     window.addEventListener("storage", syncLogout);
-
-    return () => {
+    return () =>
       window.removeEventListener("storage", syncLogout);
-    };
   }, []);
 
-  if (checkingAuth) return null; // ou loader
+  if (checkingAuth) return null;
 
-  return <RouterProvider router={router} />;
+  return (<><RouterProvider router={router} /><ToastContainer /></>)
+  
+  
 }
 
 export default App;
