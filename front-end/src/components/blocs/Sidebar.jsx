@@ -1,18 +1,27 @@
-import React from 'react';
-import LogoCard from "./LogoCard"
-import UserProfileCard from './UserProfileCard';
-import SidebarItems from './SidebarItems';
+import React from "react";
+import LogoCard from "./LogoCard";
+import UserProfileCard from "./UserProfileCard";
+import SidebarItems from "./SidebarItems";
+import { useUIStore } from "../../store/uiStore";
 
 const Sidebar = () => {
+  const open = useUIStore((s) => s.open);
+
   return (
-    <aside className='xl:w-64 xl:h-screen xl:flex xl:flex-col xl:justify-between xl:items-center border-r'>
-      <LogoCard/>
-      <div className="xl:w-full xl:h-3/4">
-        <SidebarItems/>
+    <aside
+      className={`fixed z-20 bg-white
+        h-screen flex flex-col justify-between items-center border-r
+        transition-all duration-300 ease-in-out
+        ${open ? "xl:w-64 w-64" : "xl:w-20 w-20"}
+      `}
+    >
+      <LogoCard />
+      <div className="w-full flex-1 py-4">
+        <SidebarItems />
       </div>
-      <UserProfileCard/>
+      <UserProfileCard />
     </aside>
   );
-}
+};
 
 export default Sidebar;

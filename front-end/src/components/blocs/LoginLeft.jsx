@@ -26,12 +26,16 @@ const LoginLeft = () => {
   const errorMessage = useAuthStore((s) => s.error);
   const clearError = useAuthStore((s) => s.clearError);
   const googleLoginStore = useAuthStore((s) => s.googleLogin);
+  const rememberMe = useAuthStore((s) => s.rememberMe);
+  const setRememberMe = useAuthStore((s) => s.setRememberMe);
 
-  const onSubmit = async (data) => {
-    await login(data);
-    console.log();
-    navigate("/dashboard")
-  };
+
+const onSubmit = async (data) => {
+  const success = await login(data);
+  if (success) {
+    navigate("/dashboard");
+  }
+};
 
   return (
     <div className="sm:w-full md:w-full xl:w-1/2 sm:h-screen md:h-screen xl:h-screen sm:flex md:flex xl:flex sm:flex-col md:flex-col xl:flex-col sm:justify-between md:justify-between xl:justify-between sm:items-center md:items-center xl:items-center md:px-4 xl:px-8 font-inter">
@@ -121,8 +125,16 @@ const LoginLeft = () => {
             />
 
             <div className="md:flex xl:flex md:items-center xl:items-center md:justify-between xl:justify-between text-[14px]">
-              <p>Se souvenir de moi</p>
-              <p className="cursor-pointer text-indigo-600">
+              <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                  <p>Se souvenir de moi</p>
+              </div>
+
+              <p className="cursor-pointer text-indigo-500">
                 Mot de passe oublié ?
               </p>
             </div>

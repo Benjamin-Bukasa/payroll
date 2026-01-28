@@ -1,20 +1,65 @@
-import React from 'react';
-import { Dot } from 'lucide-react';
+import React from "react"
 
-const Badge = ({status, className}) => {
-
-let value = status.charAt(0).toUpperCase()+status.slice(1).toLowerCase()
-
-  return (
-    <>
-      <span className={`w-24 px-2 rounded-full flex items-center justify-start gap-1 h-6 text-[14px] text-center
-        ${status=="ACTIF"? "bg-green-100 text-green-500": status=="INACTIF"?"bg-red-100 text-red-500":"bg-gray-100 text-gray-500"}
-        font-semibold ${className} `}>
-        <Dot size={20}/>
-        {value}
-      </span>
-    </>
-  );
+const STATUS_CONFIG = {
+  ACTIF: {
+    label: "Actif",
+    bg: "bg-green-100",
+    text: "text-green-600",
+    dot: "bg-green-500",
+  },
+  INACTIF: {
+    label: "Inactif",
+    bg: "bg-red-100",
+    text: "text-red-700",
+    dot: "bg-red-500",
+  },
+  SUSPENDU: {
+    label: "Suspendu",
+    bg: "bg-yellow-100",
+    text: "text-yellow-600",
+    dot: "bg-yellow-500",
+  },
 }
 
-export default Badge;
+const Badge = ({
+  status = "INACTIF",
+  className = "",
+}) => {
+  const config =
+    STATUS_CONFIG[status] || {
+      label: status,
+      bg: "bg-gray-100",
+      text: "text-gray-500",
+      dot: "bg-gray-400",
+    }
+
+  return (
+    <span
+      className={`
+        inline-flex items-center gap-1.5
+        rounded-full
+        px-2 py-0.5
+        text-xs font-normal
+        leading-none
+        ${config.bg} ${config.text}
+        ${className}
+      `}
+    >
+      {/* Dot */}
+      <span
+        className={`
+          h-1.5 w-1.5
+          rounded-full
+          ${config.dot}
+        `}
+      />
+
+      {/* Label */}
+      <span className="whitespace-nowrap">
+        {config.label}
+      </span>
+    </span>
+  )
+}
+
+export default Badge

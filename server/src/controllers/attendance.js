@@ -216,3 +216,91 @@ export const deleteAttendance = async (req, res) => {
 
   res.json({ message: "Attendance deleted" });
 };
+
+
+
+/* ======================================================
+   LIST ATTENDANCES (DASHBOARD / RH)
+   - Présence
+   - Absence
+   - Retard
+   - Départ tôt
+   - Clock in / out
+====================================================== */
+export const listAttendances = async (req, res) => {
+  try {
+    const {
+      month,
+      year,
+      clientCompanyId,
+    } = req.query;
+
+    const now = new Date();
+    const currentMonth =
+      month !== undefined ? Number(month) : now.getMonth();
+    const currentYear =
+      year !== undefined ? Number(year) : now.getFullYear();
+
+    const startDate = new Date(currentYear, currentMonth, 1);
+    const endDate = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+
+    const attendances = await prisma.attendance.findMany({
+      where: {
+        startTime: {
+          gte: startDate,
+          lte: endDate,
+        },
+        employee: clientCompanyId
+          ? { clientCompanyId }
+          : undefined,
+      },
+      include: {
+        employee: {
+          include: {
+            clientCompany: true,
+          },
+        },
+      },
+      orderBy: {
+        startTime: "desc",
+      },
+    });
+
+    const mapped = attendances.map((a) => ({
+      id: a.id,
+      employee: {
+        id: a.employee.id,
+        firstname: a.employee.firstname,
+        lastname: a.employee.lastname,
+        status: a.employee.status,
+      },
+      clientCompany: a.employee.clientCompany,
+      startTime: a.startTime,
+      endTime: a.endTime,
+      attendanceStatus: a.attendanceStatus,
+      lateStatus: a.lateStatus,
+
+      // 🧠 DÉRIVÉS (dashboard)
+      isLate: a.lateStatus === "LATE",
+      isAbsent: a.attendanceStatus === "ABSENT",
+      isPresent: a.attendanceStatus === "PRESENT",
+      isEarlyLeave:
+        a.workedHours !== null && a.workedHours < 8,
+      isCompleted: !!a.startTime && !!a.endTime,
+
+      workedHours: a.workedHours,
+    }));
+
+    res.json({
+      month: currentMonth + 1,
+      year: currentYear,
+      total: mapped.length,
+      data: mapped,
+    });
+  } catch (error) {
+    console.error("List attendances error:", error);
+    res.status(500).json({
+      message: "Unable to fetch attendances",
+    });
+  }
+};

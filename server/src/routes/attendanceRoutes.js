@@ -9,6 +9,7 @@ import {
   listAttendanceByEmployee,
   updateAttendance,
   deleteAttendance,
+  listAttendances
 } from "../controllers/attendance.js";
 
 import {downloadAttendanceTemplate,} from "../controllers/attendanceTemplate.js";
@@ -26,6 +27,7 @@ const router = express.Router();
 router.use(authMiddleware);
 router.use(checkRole("SUPER_ADMIN", "ADMIN", "MANAGER"));
 
+router.get("/", listAttendances);
 
 router.post("/clock-in", clockIn);
 

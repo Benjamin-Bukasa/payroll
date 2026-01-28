@@ -26,6 +26,7 @@ export const authMiddleware = async (req, res, next) => {
         id: true,
         role: true,
         isActive: true,
+        companyId: true,
       },
     });
 
@@ -45,6 +46,7 @@ export const authMiddleware = async (req, res, next) => {
     req.user = {
       id: user.id,
       role: user.role,
+      companyId: user.companyId,
     };
 
     next();

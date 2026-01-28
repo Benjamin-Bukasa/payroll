@@ -1,64 +1,119 @@
-import { Home,Building2,SquareCheck,User,LogOut,Database,FileText,Bell,Settings,FolderOpen } from 'lucide-react';
-import React from 'react';
-import { Link } from 'react-router-dom';
+import {
+  Home,
+  Building2,
+  SquareCheck,
+  User,
+  LogOut,
+  Database,
+  FileText,
+  Bell,
+  Settings,
+  FolderOpen,
+  CircleArrowOutUpLeft,
+} from "lucide-react";
+import React from "react";
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
+import { useUIStore } from "../../store/UiStore";
+import { useAuthStore } from "../../store/authStore";
+import ConfirmLogoutModal from './../auth/ConfirmLogoutModal';
+
+
+const menuItems = [
+  { to: "/dashboard", label: "Accueil", icon: Home },
+  { to: "/client-companies", label: "Entreprises", icon: Building2 },
+  { to: "/employees", label: "Employés", icon: User },
+  { to: "/attendance", label: "Pointages", icon: SquareCheck },
+  { to: "/leaves", label: "Congé", icon: LogOut },
+  { to: "/payroll", label: "Paie", icon: Database },
+  { to: "/report", label: "Rapport", icon: FileText },
+];
+
+const userItems = [
+  { to: "/notifications", label: "Notifications", icon: Bell },
+  { to: "/settings", label: "Paramètres", icon: Settings },
+  { to: "/folders", label: "Documents", icon: FolderOpen }
+];
 
 const SidebarItems = () => {
-  return (
-    <>
-    <div className="xl:w-full xl:h-full xl:flex xl:flex-col xl:justify-between px-4">
-      <div className="w-full xl:flex xl:flex-col xl:justify-between xl:items-start xl:gap-4">
-        <h3 className="w-full text-neutral-500 font-medium text-[13px]">MENU</h3>
-        <ul className="w-full xl:flex xl:flex-col gap-3 text-neutral-500 font-medium">
-            <Link to="/dashboard" className='w-full flex items-center justify-content gap-4 py-1'>
-                <Home size={20}/>
-                <li>Accueil</li>
-            </Link>
-            <Link to="/client-companies" className='w-full flex items-center justify-content gap-4 py-1'>
-                <Building2 size={20}/>
-                <li>Entreprises</li>
-            </Link>
-            <Link to="/employees" className='w-full flex items-center justify-content gap-4 py-1'>
-                <User size={20}/>
-                <li>Employés</li>
-            </Link>
-            <Link to="/attendance" className='w-full flex items-center justify-content gap-4 py-1'>
-                <SquareCheck size={20}/>
-                <li>Pointages</li>
-            </Link>
-            <Link to="/leaves" className='w-full flex items-center justify-content gap-4 py-1'>
-                <LogOut size={20}/>
-                <li>Congé</li>
-            </Link>
-            <Link to="/payroll" className='w-full flex items-center justify-content gap-4 py-1'>
-                <Database size={20}/>
-                <li>Paie</li>
-            </Link>
-            <Link to="/report" className='w-full flex items-center justify-content gap-4 py-1'>
-                <FileText size={20}/>
-                <li>Rapport</li>
-            </Link>
-        </ul>
-      </div>
-      <div className="w-full xl:flex xl:flex-col xl:justify-between xl:items-start xl:gap-4">
-        <h3 className="w-full text-neutral-500 font-medium text-[13px]">UTILISATEUR</h3>
-        <ul className="w-full xl:flex xl:flex-col gap-3 text-neutral-500 font-medium">
-            <Link to="/notifications" className='w-full flex items-center justify-start gap-4 py-1'>
-                <Bell size={20}/>
-                <li>Notifications</li>
-            </Link>
-            <Link to="/settings" className='w-full flex items-center justify-start gap-4 py-1'>
-                <Settings/>
-                <li>Paramètres</li>
-            </Link>
-            <Link to="/folders" className='w-full flex items-center justify-start gap-4 py-1'>
-                <FolderOpen/>
-                <li>Documents</li>
-            </Link>
-        </ul>
-      </div>
-    </div>
-    </>
+
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const open = useUIStore((s) => s.open);
+  const logout = useAuthStore((s) => s.logout);
+
+  const renderItem = ({ to, label, icon: Icon }) => (
+    <NavLink
+      key={to}
+      to={to}
+      className={({ isActive }) =>
+        `
+        w-full flex items-center gap-4 px-3 py-2 rounded-md
+        transition-colors
+        ${
+          isActive
+            ? "bg-neutral-100 text-neutral-700"
+            : "text-neutral-500 hover:bg-neutral-50"
+        }
+      `
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <Icon
+            size={20}
+            className={isActive ? "text-indigo-600" : ""}
+          />
+          {open && <span>{label}</span>}
+        </>
+      )}
+    </NavLink>
   );
-}
+
+  return (
+    <div className={`w-full h-full flex flex-col justify-between ${open?"":"items-center"} px-2 py-4`}>
+      <div className="flex flex-col gap-4">
+        {open && (
+          <h3 className="text-neutral-500 font-medium text-[13px] px-2">
+            MENU
+          </h3>
+        )}
+        <ul className="flex flex-col gap-2">
+          {menuItems.map(renderItem)}
+        </ul>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        {open && (
+          <h3 className="text-neutral-500 font-medium text-[13px] px-2">
+            UTILISATEUR
+          </h3>
+        )}
+        <ul className="flex flex-col gap-2">
+          {userItems.map(renderItem)}
+
+        </ul>
+        <button
+            onClick={() => setShowLogoutModal(true)}
+            className={`
+              w-full flex items-center ${open ?"":"justify-center"}  gap-4 py-2 px-2 rounded-lg
+             text-neutral-500 hover:text-red-500 hover:bg-red-50 transition
+            `}
+          >
+            <CircleArrowOutUpLeft size={20} />
+            {open && <span>Déconnexion</span>}
+          </button>
+      </div>
+      <ConfirmLogoutModal
+        open={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={async () => {
+          await logout();
+          navigate("/login", { replace: true });
+  }}
+/>
+    </div>
+  );
+};
 
 export default SidebarItems;

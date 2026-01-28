@@ -23,22 +23,22 @@ const parseExcel = (buffer) => {
 export const importClientCompanies = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({
-        message: "File is required",
-      });
+      return res.status(400).json({ message: "File is required" });
     }
 
-    const ext = req.file.originalname.split(".").pop();
+    if (!req.user?.companyId) {
+      return res.status(403).json({ message: "Company context missing" });
+    }
+
+    const ext = req.file.originalname.split(".").pop().toLowerCase();
     let rows = [];
 
     if (ext === "csv") {
       rows = await parseCSV(req.file.buffer);
-    } else if (ext === "xlsx") {
+    } else if (ext === "xlsx" || ext === "xls") {
       rows = parseExcel(req.file.buffer);
     } else {
-      return res.status(400).json({
-        message: "Unsupported file format",
-      });
+      return res.status(400).json({ message: "Unsupported file format" });
     }
 
     const created = [];
@@ -47,39 +47,73 @@ export const importClientCompanies = async (req, res) => {
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
 
-      if (!row.name || !row.address) {
+      const lineNumber = i + 2; // header + 1
+
+      const companyName = row.companyName?.trim();
+      const address = row.address?.trim();
+
+      /* ===============================
+         VALIDATION DE BASE
+      =============================== */
+      if (!companyName || !address) {
         errors.push({
-          line: i + 2,
-          error: "name and address are required",
+          line: lineNumber,
+          error: "companyName et address sont obligatoires",
         });
         continue;
       }
 
+      /* ===============================
+         🔒 BLOQUER LES DOUBLONS
+      =============================== */
+      const exists = await prisma.clientCompany.findFirst({
+        where: {
+          companyId: req.user.companyId,
+          companyName: {
+            equals: companyName,
+            mode: "insensitive", // 👈 ignore la casse
+          },
+        },
+      });
+
+      if (exists) {
+        errors.push({
+          line: lineNumber,
+          error: `Entreprise "${companyName}" existe déjà`,
+        });
+        continue;
+      }
+
+      /* ===============================
+         CRÉATION
+      =============================== */
       try {
         const company = await prisma.clientCompany.create({
           data: {
-            name: row.name,
+            companyName,
             email: row.email || null,
             phone: row.phone || null,
-            address: row.address,
+            address,
             idNat: row.idNat || null,
             rccm: row.rccm || null,
             numImpot: row.numImpot || null,
-            companyId: req.user.companyId,
+            activitySector: row.activitySector || "GENERAL",
+
+            company: {
+              connect: { id: req.user.companyId },
+            },
           },
         });
 
-        // auto schedule
+        // 🔁 Schedule auto
         await prisma.clientCompanySchedule.create({
-          data: {
-            clientCompanyId: company.id,
-          },
+          data: { clientCompanyId: company.id },
         });
 
         created.push(company.id);
       } catch (err) {
         errors.push({
-          line: i + 2,
+          line: lineNumber,
           error: err.message,
         });
       }
@@ -97,14 +131,13 @@ export const importClientCompanies = async (req, res) => {
     });
 
     res.json({
-      message: "Import completed",
+      message: "Import terminé",
       created: created.length,
+      ignored: errors.length,
       errors,
     });
   } catch (error) {
     console.error("Import error:", error);
-    res.status(500).json({
-      message: "Import failed",
-    });
+    res.status(500).json({ message: "Import failed" });
   }
 };

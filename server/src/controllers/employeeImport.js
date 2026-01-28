@@ -4,10 +4,9 @@ import XLSX from "xlsx";
 import { Readable } from "stream";
 import { createAuditLog } from "../services/audit.js";
 
-/* ======================================================
-   HELPERS
-====================================================== */
-
+/* =======================
+   PARSERS
+======================= */
 const parseCSV = (buffer) =>
   new Promise((resolve, reject) => {
     const results = [];
@@ -24,109 +23,75 @@ const parseExcel = (buffer) => {
   return XLSX.utils.sheet_to_json(sheet);
 };
 
-/* ======================================================
+/* =======================
    IMPORT EMPLOYEES
-====================================================== */
-
+======================= */
 export const importEmployees = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({
-        message: "File is required",
-      });
+      return res.status(400).json({ message: "File is required" });
     }
 
-    const extension = req.file.originalname
-      .split(".")
-      .pop()
-      .toLowerCase();
-
+    const ext = req.file.originalname.split(".").pop();
     let rows = [];
 
-    if (extension === "csv") {
-      rows = await parseCSV(req.file.buffer);
-    } else if (extension === "xlsx") {
-      rows = parseExcel(req.file.buffer);
-    } else {
-      return res.status(400).json({
-        message: "Unsupported file format (csv or xlsx only)",
-      });
+    if (ext === "csv") rows = await parseCSV(req.file.buffer);
+    else if (ext === "xlsx") rows = parseExcel(req.file.buffer);
+    else {
+      return res.status(400).json({ message: "Unsupported file format" });
     }
 
     const created = [];
+    const skipped = [];
     const errors = [];
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
 
-      // ======================
-      // VALIDATION MINIMALE
-      // ======================
-      if (
-        !row.firstname ||
-        !row.lastname ||
-        !row.gender ||
-        !row.dateOfBirth ||
-        !row.civilStatus ||
-        row.children === undefined ||
-        !row.position ||
-        !row.department ||
-        !row.baseSalary ||
-        !row.companyName
-      ) {
+      if (!row.firstname || !row.lastname || !row.clientCompanyId) {
         errors.push({
           line: i + 2,
-          error: "Missing required fields",
-        });
-        continue;
-      }
-
-      if (Number(row.children) < 0) {
-        errors.push({
-          line: i + 2,
-          error: "children must be >= 0",
+          error: "firstname, lastname et clientCompanyId requis",
         });
         continue;
       }
 
       try {
-        // ======================
-        // RESOLUTION CLIENT COMPANY PAR NOM
-        // ======================
-        const clientCompany = await prisma.clientCompany.findFirst({
+        // 🔍 Vérifier si employé existe déjà
+        const exists = await prisma.employee.findFirst({
           where: {
-            name: row.companyName,
-            companyId: req.user.companyId,
+            OR: [
+              row.email ? { email: row.email } : undefined,
+              {
+                firstname: row.firstname,
+                lastname: row.lastname,
+                clientCompanyId: row.clientCompanyId,
+              },
+            ].filter(Boolean),
           },
         });
 
-        if (!clientCompany) {
-          errors.push({
+        if (exists) {
+          skipped.push({
             line: i + 2,
-            error: `ClientCompany "${row.companyName}" not found`,
+            reason: "Employé déjà existant",
           });
           continue;
         }
 
-        // ======================
-        // CREATION EMPLOYEE
-        // ======================
         const employee = await prisma.employee.create({
           data: {
             firstname: row.firstname,
             lastname: row.lastname,
-            gender: row.gender,
-            placeofbirth: row.placeofbirth || null,
-            dateOfBirth: new Date(row.dateOfBirth),
-            civilStatus: row.civilStatus,
-            children: Number(row.children),
-            adress: row.adress || null,
-            phone: row.phone || null,
             email: row.email || null,
-            position: row.position,
-            department: row.department,
-            baseSalary: Number(row.baseSalary),
-            clientCompanyId: clientCompany.id,
+            phone: row.phone || null,
+            gender: row.gender || "UNKNOWN",
+            position: row.position || "",
+            department: row.department || "",
+            status: "ACTIF",
+            baseSalary: Number(row.baseSalary || 0),
+            smigId: row.smigId,
+            clientCompanyId: row.clientCompanyId,
           },
         });
 
@@ -139,29 +104,21 @@ export const importEmployees = async (req, res) => {
       }
     }
 
-    // ======================
-    // AUDIT LOG
-    // ======================
     await createAuditLog({
       userId: req.user.id,
       action: "IMPORT_EMPLOYEES",
       entity: "Employee",
       entityId: req.user.companyId,
-      newValue: {
-        created: created.length,
-        errors: errors.length,
-      },
     });
 
     res.json({
-      message: "Employee import completed",
+      message: "Import terminé",
       created: created.length,
+      skipped,
       errors,
     });
   } catch (error) {
     console.error("Import employees error:", error);
-    res.status(500).json({
-      message: "Employee import failed",
-    });
+    res.status(500).json({ message: "Import failed" });
   }
 };

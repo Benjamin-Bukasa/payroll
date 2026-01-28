@@ -1,22 +1,35 @@
-import React from 'react';
-import Logo from "../ui/logo";
-import Button from "../ui/button"
-
-import { HandCoins,ChevronLeft } from 'lucide-react';
-
+import React from "react";
+import Button from "../ui/button";
+import { HandCoins, ChevronLeft } from "lucide-react";
+import { useUIStore } from "../../store/UiStore";
 
 const LogoCard = () => {
+  const open = useUIStore((s) => s.open);
+  const toggleOpen = useUIStore((s) => s.toggleOpen);
+
   return (
-    <div className='xl:w-[90%] xl:flex xl:item-center xl:justify-between xl:gap-2 xl:py-6 border-b'>
-      <div className="xl:flex xl:item-center xl:justify-start xl:gap-2 text-indigo-500">
-        <HandCoins size={30}/>
-        <span className='xl:text-xl font-semibold text-neutral-900'>Neopayroll</span>
+    <div className="w-full flex items-center justify-between gap-2 py-6 px-4 border-b">
+      <div className="flex items-center gap-2 text-indigo-500">
+        <HandCoins size={30} />
+        {open && (
+          <span className="text-xl font-semibold text-neutral-900">
+            Neopayroll
+          </span>
+        )}
       </div>
-      <Button className={'w-6 h-6 flex items-center justify-center rounded-full text-center'}>
-        <ChevronLeft size={16}/>
+
+      <Button
+        onClick={toggleOpen}
+        className={`
+          w-6 h-6 flex items-center justify-center rounded-full
+          transition-transform
+          ${!open ? "rotate-180" : ""}
+        `}
+      >
+        <ChevronLeft size={16} />
       </Button>
     </div>
   );
-}
+};
 
 export default LogoCard;
