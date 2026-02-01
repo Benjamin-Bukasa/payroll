@@ -8,9 +8,8 @@ function Settings() {
     <div className="w-full h-full flex justify-start items-start">
 
       <SettingsSideBar />
-      <div className="h-full flex flex-1 border-l">
+      <div className="h-full flex flex-1 border-l p-4">
         <Outlet />
-        
       </div>
     </div>
     </>

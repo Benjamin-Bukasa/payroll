@@ -18,7 +18,7 @@ const UserProfileCard = () => {
       <div className="flex items-center gap-2">
         <div
           className="bg-neutral-100 rounded-full w-9 h-9 cursor-pointer overflow-hidden"
-          onClick={() => navigate(`/profile/${user.id}`)}
+          onClick={() => navigate(`settings/profile/${user.id}`)}
         >
           <img
             src={user.avatar || "/avatar.png"}
@@ -40,7 +40,7 @@ const UserProfileCard = () => {
       {open && (
         <Button
           className="w-6 h-6 flex items-center justify-center rounded-full"
-          onClick={() => navigate(`/profile/${user.id}`)}
+          onClick={() => navigate(`settings/profile/${user.id}`)}
         >
           <ChevronRight size={16} />
         </Button>
