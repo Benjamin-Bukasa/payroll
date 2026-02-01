@@ -3,10 +3,12 @@ import Button from "../ui/button";
 import SearchForm from "../ui/search-form";
 import { useAuthStore } from "../../store/authStore";
 import { Bell, CalendarDays, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const user = useAuthStore((s) => s.user);
   const checkingAuth = useAuthStore((s) => s.checkingAuth);
+  const navigate = useNavigate()
 
   if (checkingAuth || !user) return null;
 
@@ -31,6 +33,7 @@ const Navbar = () => {
           <Button
             className="flex items-center gap-2 px-6 py-3 rounded-lg text-neutral-500"
             buttonStyle={false}
+            onClick={()=>navigate(`/createAttendance`)}
           >
             <CalendarDays size={16} />
             <span className="text-neutral-600">Attendance</span>
@@ -39,6 +42,7 @@ const Navbar = () => {
           <Button
             className="flex items-center gap-2 px-6 py-3 rounded-lg"
             buttonStyle={true}
+            onClick={()=>navigate(`/createEmployee`)}
           >
             <Plus size={16} />
             <span>Employé(e)</span>

@@ -22,6 +22,10 @@ import GuestRoute from './GuestRoute';
 
 import ClientCompany from "../components/blocs/Companies/ClientCompany";
 
+// import Settings from './../pages/dashboard/Settings';
+import SetProfile from './../components/Settings/SetProfile';
+import EmployeeCreateForm from "../components/blocs/employees/EmployeeCreateForm";
+
 
 export const router = createBrowserRouter([
   {
@@ -45,9 +49,11 @@ export const router = createBrowserRouter([
         children: [
           { path: "/dashboard", element: <Home /> },
           { path: "/employees", element: <Employees /> },
-          { path: "/client-companies", element: <ClientCompanies />,},
-          {path: "/client-companies/:clientCompanyId", element: <ClientCompany />},
+          { path: "/createEmployee", element: <EmployeeCreateForm/>},
+          { path: "/client-companies", element: <ClientCompanies />},
+          { path: "/client-companies/:clientCompanyId", element: <ClientCompany />},
           { path: "/attendance", element: <Attendance /> },
+          { path: "/createAttendance", element: <div>Créer un pointage</div>},
           { path: "/leaves", element: <Leaves/> },
           { path: "/payroll", element: <Payroll /> },
           { path: "/report", element: <Report /> },
@@ -56,8 +62,9 @@ export const router = createBrowserRouter([
             path: "/settings", 
             element: <Settings/>,
             children:[
-              {index: true, element: <div>Select a setting option</div>},
-              {element: <div>Profile Settings</div>, path: "profile"},
+              {index: true, element: <SetProfile/>},
+              {element: <SetProfile/>, path: "profile"},
+              {element: <SetProfile/>, path: "profile/:id"},
               {element: <div>Account Settings</div>, path: "company"},
               {element: <div>Billing Settings</div>, path: "billing"},
               {element: <div>Security Settings</div>, path: "security"},

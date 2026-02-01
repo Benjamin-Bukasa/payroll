@@ -32,7 +32,8 @@ const SettingsSideBar = () => {
       `}
     >
       {/* TOGGLE */}
-      <div className={`${open ? "text-right" : "text-center"} w-full mb-4`}>
+      <div className={`${open ? "text-center flex items-center justify-between" : "flex justify-center items-center "}  w-full mb-4`}>
+        <p className={`${open?'flex':'hidden'} font-medium text-neutral-500`}>Paramètres</p>
         <Button className="rounded-lg p-1" onClick={() => setOpen(!open)}>
           {open ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
         </Button>

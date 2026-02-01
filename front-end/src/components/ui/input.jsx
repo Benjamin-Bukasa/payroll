@@ -11,11 +11,12 @@ const Input = React.forwardRef(
       name,
       error, 
       placeholder,
+      className
     },
     ref
   ) => {
     return (
-      <div className="flex flex-col gap-1">
+      <div className="w-full flex flex-col gap-1">
         {label && (
           <label
             htmlFor={name}
@@ -34,7 +35,7 @@ const Input = React.forwardRef(
           onChange={onChange}
           onBlur={onBlur}
           placeholder={placeholder}
-          className={`
+          className={`${className}
             px-3 py-2 rounded-md border outline-none transition
             ${
               error
