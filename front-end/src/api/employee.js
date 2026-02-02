@@ -6,7 +6,7 @@ export const getEmployees = async () => {
 };
 
 export const createEmployee = async (data) => {
-  const res = await api.post("/employee", data);
+  const res = await api.post("/employee/create", data);
   return res.data;
 };
 

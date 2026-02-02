@@ -1,82 +1,377 @@
-import React from 'react';
-import Input from '../../ui/input';
-import Button from '../../ui/button';
-import ScrollArea from '../../ui/scroll-area';
+import React, { useEffect, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+
+import Input from "../../ui/input";
+import Button from "../../ui/button";
+import ScrollArea from "../../ui/scroll-area";
+import SuccessModal from "../../ui/SuccessModal";
+
+import { useEmployeeStore } from "../../../store/employeeStore";
+import { useClientCompanyStore } from "../../../store/clientCompanyStore";
+import ImportEmployeeForm from "./ImportEmployeeForm";
 
 const EmployeeCreateForm = () => {
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+  } = useForm({
+    defaultValues: {
+      firstname: "",
+      middlename: "",
+      lastname: "",
+      gender: "",
+      civilStatus: "",
+      dateOfBirth: "",
+      children: 0,
+      address: "",
+      phone: "",
+      placeofbirth: "",
+
+      contractStart: "",
+      contractEnd: "",
+      position: "",
+      department: "",
+      contractType: "",
+      baseSalary: "",
+      salaryCurrency: "USD",
+
+      clientCompanyId: "",
+    },
+  });
+
+  const {
+    createEmployee,
+    fetchActiveSmig,
+    smig,
+    loading,
+    error,
+    clearError,
+  } = useEmployeeStore();
+
+  const {
+    clientCompanies,
+    fetchClientCompanies,
+  } = useClientCompanyStore();
+
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [createdEmployee, setCreatedEmployee] = useState(null);
+
+  /* =========================
+     FETCH DATA
+  ========================= */
+  useEffect(() => {
+    fetchActiveSmig();
+
+    if (clientCompanies.length === 0) {
+      fetchClientCompanies();
+    }
+  }, [fetchActiveSmig, fetchClientCompanies, clientCompanies.length]);
+
+  /* =========================
+     AUTO SMIG
+  ========================= */
+  useEffect(() => {
+    if (smig) {
+      setValue("baseSalary", smig.dailyRate * 26);
+    }
+  }, [smig, setValue]);
+
+  /* =========================
+     SUBMIT
+  ========================= */
+  const onSubmit = async (data) => {
+    clearError();
+
+    const payload = {
+      ...data,
+      baseSalary: Number(data.baseSalary),
+      children: Number(data.children),
+    };
+
+    const created = await createEmployee(payload);
+
+    if (created) {
+      setCreatedEmployee(created);
+      setSuccessOpen(true);
+      reset();
+    }
+  };
+
   return (
     <>
-      <section className='w-full h-full flex p-4 gap-4'>
-        <ScrollArea className={"h-[820px] flex-1 border-none pr-4 pb-2"}>
-                <h3 className="sticky top-0 bg-white px-1 py-1 text-lg text-indigo-600 font-semibold">Ajouter un nouvel employé</h3>
-            <form action="" className="w-full flex flex-col gap-1 ">
-                <div className="rounded-lg p-2">
-                    <h4 className="py-2 text-indigo-400 font-medium border-b">Informations personnelles</h4>
-                    <div className="grid grid-cols-2 gap-6 py-5">
-                        <Input placeholder="Prénom de l'employé" label="Prénom"/>
-                        <Input placeholder="Nom de famille" label="Post-nom"/>
-                        <Input placeholder="Nom de l'employé" label="Nom"/>
-                        <Input placeholder="Nom de l'employé" label="Date de naissance" type="date"/>
-                        <Input placeholder="Nom de l'employé" label="Date de naissance" type="date"/>
-                        <Input placeholder="Nombre d'enfant" label="Enfant(s)" type="number"/>
-                        <Input placeholder="Adresse domicile" label="Adresse" type="text"/>
-                        <Input placeholder="Adresse email" label="email" type="email"/>
-                        <select className='py-2 border outline-none rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-200'>
-                            <option value="">Choisir le genre</option>
-                            <option value="Homme">Homme</option>
-                            <option value="Femme">Femme</option>
-                        </select>
-                        <select className='py-2 border outline-none rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-200'>
-                            <option value="">Choisir l'Etat-civil</option>
-                            <option value="Celibataire">Célibataire</option>
-                            <option value="Marié">Marié(e)</option>
-                        </select>
-                    </div>
+      <section className="w-full h-full flex gap-4 p-4">
+        <ScrollArea className="flex-1 h-[820px] pr-4 border-none">
+          <h3 className="sticky top-0 bg-white px-2 py-2 text-lg font-semibold text-indigo-600">
+            Ajouter un nouvel employé
+          </h3>
+
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-6 mt-4"
+          >
+            {/* ===============================
+                INFORMATIONS PERSONNELLES
+            =============================== */}
+            <div className="rounded-lg p-4 border">
+              <h4 className="pb-2 mb-4 text-indigo-500 font-medium border-b">
+                Informations personnelles
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <Controller
+                  name="firstname"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Input label="Prénom" {...field} />
+                  )}
+                />
+
+                <Controller
+                  name="middlename"
+                  control={control}
+                  render={({ field }) => (
+                    <Input label="Post-nom" {...field} />
+                  )}
+                />
+
+                <Controller
+                  name="lastname"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Input label="Nom" {...field} />
+                  )}
+                />
+
+                <Controller
+                  name="dateOfBirth"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      label="Date de naissance"
+                      type="date"
+                      {...field}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="placeofbirth"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Input label="Lieu de naissance" {...field} />
+                  )}
+                />
+
+                <Controller
+                  name="children"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      label="Nombre d’enfants"
+                      type="number"
+                      min={0}
+                      {...field}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="address"
+                  control={control}
+                  render={({ field }) => (
+                    <Input label="Adresse" {...field} />
+                  )}
+                />
+
+                <Controller
+                  name="phone"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      label="Téléphone"
+                      type="tel"
+                      {...field}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="gender"
+                  control={control}
+                  render={({ field }) => (
+                    <select {...field} className="py-2 border rounded-lg outline-none border-gray-300 focus:ring-2 focus:ring-indigo-200">
+                      <option value="">Genre</option>
+                      <option value="HOMME">Homme</option>
+                      <option value="FEMME">Femme</option>
+                    </select>
+                  )}
+                />
+
+                <Controller
+                  name="civilStatus"
+                  control={control}
+                  render={({ field }) => (
+                    <select {...field} className="py-2 border rounded-lg outline-none border-gray-300 focus:ring-2 focus:ring-indigo-200">
+                      <option value="">État civil</option>
+                      <option value="CELIBATAIRE">Célibataire</option>
+                      <option value="MARIE">Marié(e)</option>
+                    </select>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* ===============================
+                CONTRAT & AFFECTATION
+            =============================== */}
+            <div className="rounded-lg p-4 border">
+              <h4 className="pb-2 mb-4 text-indigo-500 font-medium border-b">
+                Contrat & affectation
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <Controller
+                  name="contractStart"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      label="Début contrat"
+                      type="date"
+                      {...field}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="contractEnd"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      label="Fin contrat"
+                      type="date"
+                      {...field}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="position"
+                  control={control}
+                  render={({ field }) => (
+                    <Input label="Poste" {...field} />
+                  )}
+                />
+
+                <Controller
+                  name="department"
+                  control={control}
+                  render={({ field }) => (
+                    <Input label="Département" {...field} />
+                  )}
+                />
+
+                {/* SALAIRE */}
+                <div className="flex items-center gap-2">
+                  <Controller
+                    name="baseSalary"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        
+                        placeholder="Salaire de base"
+                        type="number"
+                        {...field}
+                        className="flex-1"
+                      />
+                    )}
+                  />
+
+                  <Controller
+                    name="salaryCurrency"
+                    control={control}
+                    render={({ field }) => (
+                      <select {...field} className="py-2 rounded-lg border">
+                        <option value="USD">USD</option>
+                        <option value="CDF">CDF</option>
+                      </select>
+                    )}
+                  />
                 </div>
-                <div className="rounded-lg p-2">
-                    <h4 className="py-2 text-indigo-400 font-medium border-b">Contrat</h4>
-                    <div className="grid grid-cols-2 gap-6 py-5">
-                        <Input placeholder="Date de début de contrat" label="Date début de contrat" type="date"/>
-                        <Input placeholder="Date de fin de contrat" label="Date fin de contrat" type="date"/>
-                        <Input placeholder="Poste occupé dans l'entreprise" label="Poste" type="text"/>
-                        <Input placeholder="Département" label="Département" type="text"/>
-                        <div className="flex flex-col gap-1">
-                            <p className="text-xs">Salaire de base</p>
-                            <div className="w-full flex items-center justify-between gap-1">
-                                <Input placeholder="Salaire de base" type="number" className=""/>
-                                <select name="" id="" className='py-2 border outline-none rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-200'>
-                                    <option>USD</option>
-                                    <option>CDF</option>
-                                </select>
-                            </div>
-                        </div>
-                        <Input placeholder="post occupé dans l'entreprise" label="Poste" type="text"/>
-                        <select className='py-2 border outline-none rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-200'>
-                            <option value="">Choisir le type de contrat</option>
-                            <option value="cdi">CDI</option>
-                            <option value="cdd">CDD</option>
-                            <option value="stage">Stage</option>
-                            <option value="prestation">Préstation</option>
-                            <option value="autres">Autres</option>
-                        </select>
-                        <select className='py-2 border outline-none rounded-lg border-gray-300 focus:ring-2 focus:ring-indigo-200'>
-                            <option value="">Choisir Entreprise d'affectation</option>
-                            <option value="cdi">CDI</option>
-                            <option value="cdd">CDD</option>
-                            <option value="stage">Stage</option>
-                            <option value="prestation">Préstation</option>
-                            <option value="autres">Autres</option>
-                        </select>
-                    </div>
-                </div>
-                <Button buttonStyle={true} className={"py-2 rounded-lg"}>Créer l'employé</Button>
-            </form>
+
+                <Controller
+                  name="contractType"
+                  control={control}
+                  
+                  render={({ field }) => (
+                    <select {...field} className="border rounded-lg">
+                      <option value="">Type de contrat</option>
+                      <option value="CDI">CDI</option>
+                      <option value="CDD">CDD</option>
+                      <option value="STAGE">Stage</option>
+                      <option value="PRESTATION">Prestation</option>
+                      <option value="AUTRE">Autre</option>
+                    </select>
+                  )}
+                />
+
+                {/* ✅ ENTREPRISE CLIENTE */}
+                <Controller
+                  name="clientCompanyId"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <select {...field} className="border rounded-lg py-2">
+                      <option value="">
+                        Entreprise d’affectation
+                      </option>
+                      {clientCompanies.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.companyName}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
+              </div>
+            </div>
+
+            <Button
+              loading={loading}
+              buttonStyle
+              className="w-full py-2 rounded-lg"
+            >
+              Créer l’employé
+            </Button>
+          </form>
         </ScrollArea>
-        <aside className=" w-1/3 h-full border">
+        <aside className="w-1/3 flex flex-col gap-6 overflow-y-auto">
+            <div className="border rounded-lg p-2 flex flex-col gap-4">
+                <div className="flex flex-col gap-4">
+                <h4 className="py-2 border-b font-semibold text-md text-indigo-600">Importer les employées</h4>
+                <ImportEmployeeForm/>
+                </div>
+            </div>
         </aside>
       </section>
+
+      {/* ✅ MODAL DE SUCCÈS */}
+      <SuccessModal
+        open={successOpen}
+        title="Employé créé"
+        message={
+          createdEmployee
+            ? `L’employé ${createdEmployee.firstname} ${createdEmployee.lastname} a été créé avec succès 🎉`
+            : ""
+        }
+        onClose={() => setSuccessOpen(false)}
+      />
     </>
   );
-}
+};
 
 export default EmployeeCreateForm;
