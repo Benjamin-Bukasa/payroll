@@ -20,8 +20,8 @@ const EmployeeTable = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="bg-white overflow-hidden">
-      <table className="w-full text-[12px]">
+    <div className="bg-white ">
+      <table className="w-full h-full text-[12px]">
         <thead className="bg-neutral-50 border-b font-medium">
           <tr>
             <th className="px-4 py-3 text-left">Nom</th>

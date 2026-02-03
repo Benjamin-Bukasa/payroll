@@ -22,55 +22,83 @@ export const createEmployee = async (req, res) => {
     department,
     baseSalary,
     clientCompanyId,
-    smigId,
+    // ❌ smigId supprimé du body
   } = req.body;
 
-  // 🔐 Vérifier que la clientCompany appartient à la company SaaS
-  const clientCompany = await prisma.clientCompany.findUnique({
-    where: { id: clientCompanyId },
-  });
+  try {
+    // 🔐 Vérifier que la clientCompany appartient à la company SaaS
+    const clientCompany = await prisma.clientCompany.findUnique({
+      where: { id: clientCompanyId },
+    });
 
-  if (!clientCompany || clientCompany.companyId !== req.user.companyId) {
-    return res.status(403).json({ message: "Access denied" });
+    if (!clientCompany || clientCompany.companyId !== req.user.companyId) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    // 🔐 MANAGER → uniquement ses entreprises clientes
+    if (
+      req.user.role === "MANAGER" &&
+      clientCompany.managerId !== req.user.id
+    ) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    // ✅ RÉCUPÉRER LE SMIG ACTIF
+    const activeSmig = await prisma.smig.findFirst({
+      where: { isActive: true },
+    });
+
+    if (!activeSmig) {
+      return res.status(400).json({
+        message: "Aucun SMIG actif trouvé. Veuillez en créer un.",
+      });
+    }
+
+    // ✅ CRÉATION EMPLOYÉ AVEC SMIG PAR DÉFAUT
+    const employee = await prisma.employee.create({
+      data: {
+        firstname,
+        lastname,
+        gender,
+        placeofbirth,
+        dateOfBirth: new Date(dateOfBirth),
+        civilStatus,
+        children: Number(children || 0),
+        adress,
+        phone,
+        email,
+        position,
+        department,
+        baseSalary: Number(baseSalary),
+        smigId: activeSmig.id, // 👈 AUTO
+        clientCompanyId,
+      },
+      include: {
+        smig: true,
+        clientCompany: true,
+      },
+    });
+
+    await createAuditLog({
+      userId: req.user.id,
+      action: "CREATE_EMPLOYEE",
+      entity: "Employee",
+      entityId: employee.id,
+      newValue: {
+        smig: activeSmig.id,
+        baseSalary,
+      },
+    });
+
+    res.status(201).json(employee);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Erreur lors de la création de l’employé",
+    });
   }
-
-  // 🔐 MANAGER → uniquement ses entreprises clientes
-  if (
-    req.user.role === "MANAGER" &&
-    clientCompany.managerId !== req.user.id
-  ) {
-    return res.status(403).json({ message: "Access denied" });
-  }
-
-  const employee = await prisma.employee.create({
-    data: {
-      firstname,
-      lastname,
-      gender,
-      placeofbirth,
-      dateOfBirth: new Date(dateOfBirth),
-      civilStatus,
-      children,
-      adress,
-      phone,
-      email,
-      position,
-      department,
-      baseSalary,
-      smigId,
-      clientCompanyId,
-    },
-  });
-
-  await createAuditLog({
-    userId: req.user.id,
-    action: "CREATE_EMPLOYEE",
-    entity: "Employee",
-    entityId: employee.id,
-  });
-
-  res.status(201).json(employee);
 };
+
 
 /**
  * =========================
