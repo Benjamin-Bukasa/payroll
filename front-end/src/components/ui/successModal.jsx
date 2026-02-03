@@ -22,7 +22,7 @@ const SuccessModal = ({ open, title, message, onClose }) => {
         </p>
 
         <div className="flex justify-end pt-4">
-          <Button onClick={onClose} className="px-4 py-2">
+          <Button onClick={onClose} className="px-4 py-2 rounded-lg" buttonStyle={true}>
             OK
           </Button>
         </div>

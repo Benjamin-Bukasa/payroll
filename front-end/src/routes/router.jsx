@@ -25,6 +25,7 @@ import ClientCompany from "../components/blocs/Companies/ClientCompany";
 // import Settings from './../pages/dashboard/Settings';
 import SetProfile from './../components/Settings/SetProfile';
 import EmployeeCreateForm from "../components/blocs/employees/EmployeeCreateForm";
+import VerifyEmail from "../pages/auth/VerifyEmail";
 
 
 export const router = createBrowserRouter([
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
           </GuestRoute>
         )},
       { path: "/forgot-password", element: <ForgotPassword /> },
+      { path: "/verify", element: <VerifyEmail/> },
     ],
   },
 
@@ -73,13 +75,13 @@ export const router = createBrowserRouter([
               {element: <div>API Settings</div>, path: "api"},
 
             ]
-           },
+          },
           { path: "/folders", element: <Folders/> },
           { path: "/profile", element: <Profile/> },
         ],
       },
     ],
   },
-
+  
   { path: "*", element: <NotFound /> },
 ]);

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+
 
 import Input from "../../ui/input";
 import Button from "../../ui/button";
@@ -10,12 +12,15 @@ import { useEmployeeStore } from "../../../store/employeeStore";
 import { useClientCompanyStore } from "../../../store/clientCompanyStore";
 import ImportEmployeeForm from "./ImportEmployeeForm";
 
+
 const EmployeeCreateForm = () => {
+
+    
+
   const {
     control,
     handleSubmit,
     reset,
-    setValue,
   } = useForm({
     defaultValues: {
       firstname: "",
@@ -24,10 +29,10 @@ const EmployeeCreateForm = () => {
       gender: "",
       civilStatus: "",
       dateOfBirth: "",
+      placeofbirth: "",
       children: 0,
       address: "",
       phone: "",
-      placeofbirth: "",
 
       contractStart: "",
       contractEnd: "",
@@ -43,8 +48,6 @@ const EmployeeCreateForm = () => {
 
   const {
     createEmployee,
-    fetchActiveSmig,
-    smig,
     loading,
     error,
     clearError,
@@ -57,26 +60,16 @@ const EmployeeCreateForm = () => {
 
   const [successOpen, setSuccessOpen] = useState(false);
   const [createdEmployee, setCreatedEmployee] = useState(null);
+  const navigate = useNavigate();
 
   /* =========================
-     FETCH DATA
+     FETCH CLIENT COMPANIES
   ========================= */
   useEffect(() => {
-    fetchActiveSmig();
-
     if (clientCompanies.length === 0) {
       fetchClientCompanies();
     }
-  }, [fetchActiveSmig, fetchClientCompanies, clientCompanies.length]);
-
-  /* =========================
-     AUTO SMIG
-  ========================= */
-  useEffect(() => {
-    if (smig) {
-      setValue("baseSalary", smig.dailyRate * 26);
-    }
-  }, [smig, setValue]);
+  }, [fetchClientCompanies, clientCompanies.length]);
 
   /* =========================
      SUBMIT
@@ -96,12 +89,14 @@ const EmployeeCreateForm = () => {
       setCreatedEmployee(created);
       setSuccessOpen(true);
       reset();
+      
     }
   };
 
   return (
     <>
       <section className="w-full h-full flex gap-4 p-4">
+        {/* ================= FORM ================= */}
         <ScrollArea className="flex-1 h-[820px] pr-4 border-none">
           <h3 className="sticky top-0 bg-white px-2 py-2 text-lg font-semibold text-indigo-600">
             Ajouter un nouvel employé
@@ -111,9 +106,7 @@ const EmployeeCreateForm = () => {
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col gap-6 mt-4"
           >
-            {/* ===============================
-                INFORMATIONS PERSONNELLES
-            =============================== */}
+            {/* ================= INFOS PERSONNELLES ================= */}
             <div className="rounded-lg p-4 border">
               <h4 className="pb-2 mb-4 text-indigo-500 font-medium border-b">
                 Informations personnelles
@@ -150,11 +143,7 @@ const EmployeeCreateForm = () => {
                   name="dateOfBirth"
                   control={control}
                   render={({ field }) => (
-                    <Input
-                      label="Date de naissance"
-                      type="date"
-                      {...field}
-                    />
+                    <Input label="Date de naissance" type="date" {...field} />
                   )}
                 />
 
@@ -171,12 +160,7 @@ const EmployeeCreateForm = () => {
                   name="children"
                   control={control}
                   render={({ field }) => (
-                    <Input
-                      label="Nombre d’enfants"
-                      type="number"
-                      min={0}
-                      {...field}
-                    />
+                    <Input label="Nombre d’enfants" type="number" min={0} {...field} />
                   )}
                 />
 
@@ -192,11 +176,7 @@ const EmployeeCreateForm = () => {
                   name="phone"
                   control={control}
                   render={({ field }) => (
-                    <Input
-                      label="Téléphone"
-                      type="tel"
-                      {...field}
-                    />
+                    <Input label="Téléphone" type="tel" {...field} />
                   )}
                 />
 
@@ -204,7 +184,7 @@ const EmployeeCreateForm = () => {
                   name="gender"
                   control={control}
                   render={({ field }) => (
-                    <select {...field} className="py-2 border rounded-lg outline-none border-gray-300 focus:ring-2 focus:ring-indigo-200">
+                    <select {...field} className="py-2 border rounded-lg">
                       <option value="">Genre</option>
                       <option value="HOMME">Homme</option>
                       <option value="FEMME">Femme</option>
@@ -216,7 +196,7 @@ const EmployeeCreateForm = () => {
                   name="civilStatus"
                   control={control}
                   render={({ field }) => (
-                    <select {...field} className="py-2 border rounded-lg outline-none border-gray-300 focus:ring-2 focus:ring-indigo-200">
+                    <select {...field} className="py-2 border rounded-lg">
                       <option value="">État civil</option>
                       <option value="CELIBATAIRE">Célibataire</option>
                       <option value="MARIE">Marié(e)</option>
@@ -226,9 +206,7 @@ const EmployeeCreateForm = () => {
               </div>
             </div>
 
-            {/* ===============================
-                CONTRAT & AFFECTATION
-            =============================== */}
+            {/* ================= CONTRAT ================= */}
             <div className="rounded-lg p-4 border">
               <h4 className="pb-2 mb-4 text-indigo-500 font-medium border-b">
                 Contrat & affectation
@@ -239,11 +217,7 @@ const EmployeeCreateForm = () => {
                   name="contractStart"
                   control={control}
                   render={({ field }) => (
-                    <Input
-                      label="Début contrat"
-                      type="date"
-                      {...field}
-                    />
+                    <Input label="Début contrat" type="date" {...field} />
                   )}
                 />
 
@@ -251,11 +225,7 @@ const EmployeeCreateForm = () => {
                   name="contractEnd"
                   control={control}
                   render={({ field }) => (
-                    <Input
-                      label="Fin contrat"
-                      type="date"
-                      {...field}
-                    />
+                    <Input label="Fin contrat" type="date" {...field} />
                   )}
                 />
 
@@ -275,7 +245,6 @@ const EmployeeCreateForm = () => {
                   )}
                 />
 
-                {/* SALAIRE */}
                 <div className="flex items-center gap-2">
                   <Controller
                     name="baseSalary"
@@ -306,9 +275,8 @@ const EmployeeCreateForm = () => {
                 <Controller
                   name="contractType"
                   control={control}
-                  
                   render={({ field }) => (
-                    <select {...field} className="border rounded-lg">
+                    <select {...field} className="py-2 border rounded-lg">
                       <option value="">Type de contrat</option>
                       <option value="CDI">CDI</option>
                       <option value="CDD">CDD</option>
@@ -319,16 +287,13 @@ const EmployeeCreateForm = () => {
                   )}
                 />
 
-                {/* ✅ ENTREPRISE CLIENTE */}
                 <Controller
                   name="clientCompanyId"
                   control={control}
                   rules={{ required: true }}
                   render={({ field }) => (
-                    <select {...field} className="border rounded-lg py-2">
-                      <option value="">
-                        Entreprise d’affectation
-                      </option>
+                    <select {...field} className="py-2 border rounded-lg">
+                      <option value="">Entreprise d’affectation</option>
                       {clientCompanies.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.companyName}
@@ -340,27 +305,26 @@ const EmployeeCreateForm = () => {
               </div>
             </div>
 
-            <Button
-              loading={loading}
-              buttonStyle
-              className="w-full py-2 rounded-lg"
-            >
+            <Button loading={loading} buttonStyle className="w-full py-2 rounded-lg">
               Créer l’employé
             </Button>
           </form>
         </ScrollArea>
+
+        {/* ================= ASIDE ================= */}
         <aside className="w-1/3 flex flex-col gap-6 overflow-y-auto">
-            <div className="border rounded-lg p-2 flex flex-col gap-4">
-                <div className="flex flex-col gap-4">
-                <h4 className="py-2 border-b font-semibold text-md text-indigo-600">Importer les employées</h4>
-                <ImportEmployeeForm/>
-                </div>
-            </div>
+          <div className="border rounded-lg p-2">
+            <h4 className="py-2 border-b font-semibold text-indigo-600">
+              Importer les employés
+            </h4>
+            <ImportEmployeeForm />
+          </div>
         </aside>
       </section>
 
-      {/* ✅ MODAL DE SUCCÈS */}
+      {/* ✅ MODAL SUCCÈS */}
       <SuccessModal
+      
         open={successOpen}
         title="Employé créé"
         message={
@@ -368,7 +332,13 @@ const EmployeeCreateForm = () => {
             ? `L’employé ${createdEmployee.firstname} ${createdEmployee.lastname} a été créé avec succès 🎉`
             : ""
         }
-        onClose={() => setSuccessOpen(false)}
+        onClose={
+            () => {
+                setSuccessOpen(false)
+                navigate(`/employees`)
+            }
+            
+        }
       />
     </>
   );
