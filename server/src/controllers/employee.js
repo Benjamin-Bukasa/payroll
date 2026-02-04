@@ -147,6 +147,32 @@ export const listEmployees = async (req, res) => {
   res.json(enriched);
 };
 
+
+//Get employee by ID
+export const getEmployeeById = async (req, res) => {
+  const { employeeId } = req.params;
+
+  const employee = await prisma.employee.findUnique({
+    where: { id: employeeId },
+    include: {
+      clientCompany: {
+        select: {
+          id: true,
+          companyName: true,
+        },
+      },
+      smig: true,
+    },
+  });
+
+  if (!employee || employee.clientCompany.companyId !== req.user.companyId) {
+    return res.status(404).json({ message: "Employee not found" });
+  }
+
+  res.json(employee);
+};
+
+
 /**
  * =========================
  * UPDATE
@@ -164,7 +190,6 @@ export const updateEmployee = async (req, res) => {
     return res.status(404).json({ message: "Employee not found" });
   }
 
-  // 🔐 MANAGER → seulement ses entreprises clientes
   if (
     req.user.role === "MANAGER" &&
     employee.clientCompany.managerId !== req.user.id
@@ -172,9 +197,56 @@ export const updateEmployee = async (req, res) => {
     return res.status(403).json({ message: "Access denied" });
   }
 
+  // ✅ LISTE BLANCHE DES CHAMPS MODIFIABLES
+  const {
+    firstname,
+    lastname,
+    gender,
+    placeofbirth,
+    dateOfBirth,
+    civilStatus,
+    children,
+    adress,
+    phone,
+    email,
+    position,
+    department,
+    baseSalary,
+    status,
+    smigId, // optionnel
+  } = req.body;
+
+  const data = {
+    firstname,
+    lastname,
+    gender,
+    placeofbirth,
+    dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
+    civilStatus,
+    children,
+    adress,
+    phone,
+    email,
+    position,
+    department,
+    baseSalary,
+    status,
+  };
+
+  // ✅ SI on change le SMIG → relation
+  if (smigId) {
+    data.smig = {
+      connect: { id: smigId },
+    };
+  }
+
   const updated = await prisma.employee.update({
     where: { id: employeeId },
-    data: req.body,
+    data,
+    include: {
+      smig: true,
+      clientCompany: true,
+    },
   });
 
   await createAuditLog({
@@ -186,6 +258,7 @@ export const updateEmployee = async (req, res) => {
 
   res.json(updated);
 };
+
 
 /**
  * =========================

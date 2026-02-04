@@ -55,9 +55,9 @@ const EmployeeSummary = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 w-full md:w-1/2">
+    <div className="flex border gap-4 w-full md:w-full">
       {/* TOTAL */}
-      <div className="bg-white border rounded-lg p-4 flex flex-col gap-1">
+      <div className="w-1/4 bg-white border rounded-lg p-4 flex flex-col gap-1">
         <div className="w-10 h-10 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-lg">
           <Users />
         </div>
@@ -70,7 +70,7 @@ const EmployeeSummary = () => {
       </div>
 
       {/* ACTIFS */}
-      <div className="bg-white border rounded-lg p-4 flex flex-col gap-1">
+      <div className="w-1/4 bg-white border rounded-lg p-4 flex flex-col gap-1">
         <div className="w-10 h-10 flex items-center justify-center bg-green-100 text-green-600 rounded-lg">
           <UserCheck />
         </div>
@@ -83,7 +83,7 @@ const EmployeeSummary = () => {
       </div>
 
       {/* INACTIFS */}
-      <div className="bg-white border rounded-lg p-4 flex flex-col gap-1">
+      <div className="w-1/4 bg-white border rounded-lg p-4 flex flex-col gap-1">
         <div className="w-10 h-10 flex items-center justify-center bg-yellow-100 text-yellow-600 rounded-lg">
           <UserMinus />
         </div>
@@ -96,7 +96,7 @@ const EmployeeSummary = () => {
       </div>
 
       {/* SUSPENDUS */}
-      <div className="bg-white border rounded-lg p-4 flex flex-col gap-1">
+      <div className="w-1/4 bg-white border rounded-lg p-4 flex flex-col gap-1">
         <div className="w-10 h-10 flex items-center justify-center bg-red-100 text-red-600 rounded-lg">
           <UserX />
         </div>

@@ -26,6 +26,11 @@ import ClientCompany from "../components/blocs/Companies/ClientCompany";
 import SetProfile from './../components/Settings/SetProfile';
 import EmployeeCreateForm from "../components/blocs/employees/EmployeeCreateForm";
 import VerifyEmail from "../pages/auth/VerifyEmail";
+import EmployeeDetails from './../components/blocs/employees/EmployeeDetails';
+import EmployeeEditForm from './../components/blocs/employees/EmployeeEditForm';
+import AttendanceForm from "../components/blocs/Attendances/AttendanceForm";
+import CreateAttendance from "../pages/dashboard/CreateAttendance";
+import SmigCreateForm from "../components/blocs/Attendances/smig/SmigCreateForm";
 
 
 export const router = createBrowserRouter([
@@ -51,11 +56,13 @@ export const router = createBrowserRouter([
         children: [
           { path: "/dashboard", element: <Home /> },
           { path: "/employees", element: <Employees /> },
+          { path: "/employees/:id", element: <EmployeeDetails/>},
+          { path: "/employees/edit/:id", element: <EmployeeEditForm/>},
           { path: "/createEmployee", element: <EmployeeCreateForm/>},
           { path: "/client-companies", element: <ClientCompanies />},
           { path: "/client-companies/:clientCompanyId", element: <ClientCompany />},
           { path: "/attendance", element: <Attendance /> },
-          { path: "/createAttendance", element: <div>Créer un pointage</div>},
+          { path: "/createAttendance", element: <CreateAttendance/>},
           { path: "/leaves", element: <Leaves/> },
           { path: "/payroll", element: <Payroll /> },
           { path: "/report", element: <Report /> },
@@ -72,7 +79,7 @@ export const router = createBrowserRouter([
               {element: <div>Security Settings</div>, path: "security"},
               {element: <div>Notifications Settings</div>, path: "notifications"},
               {element: <div>Payroll Settings</div>, path: "payroll"},
-              {element: <div>API Settings</div>, path: "api"},
+              {element: <SmigCreateForm/>, path: "smig"},
 
             ]
           },

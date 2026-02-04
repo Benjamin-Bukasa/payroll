@@ -76,7 +76,7 @@ const EmployeeSelectableTable = ({
   }
 
   return (
-    <div className="bg-white  rounded-lg h-full">
+    <div className="bg-white rounded-lg h-full">
       <table className="w-full text-[12px]">
         <thead className="bg-neutral-50">
           <tr>
