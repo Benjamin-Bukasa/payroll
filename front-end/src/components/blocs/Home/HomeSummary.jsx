@@ -59,7 +59,7 @@ const HomeSummary = () => {
   }
 
   return (
-    <div className="sm:w-full  md:w-1/2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+    <div className="sm:w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
       {/* ACTIFS */}
       <div className="w-full flex flex-col gap-1 bg-white border rounded-lg p-4">
         <div className="w-10 h-10 flex items-center justify-center text-green-600 bg-green-100 rounded-lg">

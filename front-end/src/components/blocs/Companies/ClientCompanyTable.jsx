@@ -31,7 +31,7 @@ const ClientCompanyTable = () => {
   }
 
   return (
-    <div className="bg-white overflow-hidden">
+    <div className="h-full bg-white overflow-hidden ">
       {/* ✅ ERREUR LISTE (PAS DE RETURN) */}
       {fetchError && (
         <div className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded mb-3">

@@ -51,6 +51,9 @@ enum WeekDay {
 enum AttendanceStatus {
   PRESENT
   ABSENT
+  LATE
+  SOON_END
+  MISSION
   ON_LEAVE
 }
 

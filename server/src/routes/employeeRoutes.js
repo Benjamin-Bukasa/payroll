@@ -11,6 +11,7 @@ import { uploadImportFile } from "../middlewares/uploadImportFile.js";
 import {
   createEmployee,
   listEmployees,
+  getEmployeeById,
   updateEmployee,
   deleteEmployee,
 } from "../controllers/employee.js";
@@ -27,6 +28,13 @@ router.get(
   checkRole("SUPER_ADMIN", "ADMIN", "MANAGER", "USER"),
   listEmployees
 );
+
+router.get(
+  "/:employeeId",
+  checkRole("SUPER_ADMIN", "ADMIN", "MANAGER"),
+  getEmployeeById
+);
+
 
 router.get(
   "/client-company/:clientCompanyId",

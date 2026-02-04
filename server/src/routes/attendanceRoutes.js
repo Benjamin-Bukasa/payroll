@@ -14,7 +14,7 @@ import {
 
 import {downloadAttendanceTemplate,} from "../controllers/attendanceTemplate.js";
 
-import {importAttendance,} from "../controllers/attendanceImport.js";
+import {importAttendance} from "../controllers/attendanceImport.js";
 
 
 import { authMiddleware } from "../middlewares/authMiddleware.js";

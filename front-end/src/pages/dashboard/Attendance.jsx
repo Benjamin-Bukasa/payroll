@@ -4,6 +4,7 @@ import ScrollArea from '../../components/ui/scroll-area';
 import EmployeeTable from '../../components/blocs/employees/EmployeeTable';
 import AttendancesMonthlyCompiled from '../../components/blocs/Attendances/AttendancesMonthlyCompiled';
 import AttendancesEmployeesOnLeave from '../../components/blocs/Attendances/AttendancesEmployeesOnLeave';
+import AttendanceTable from '../../components/blocs/Attendances/AttendanceTable';
 
 function Attendance() {
   return (
@@ -12,7 +13,7 @@ function Attendance() {
         <AttendancesSummary/>
         <ScrollArea className={"h-[670px]"}>
           <h3 className="p-4 font-semibold text-lg">Liste de pointages</h3>
-          <EmployeeTable/>
+          <AttendanceTable/>
         </ScrollArea>
       </div>
       <aside className="w-1/3 h-full p-1 flex flex-col items-start justify-start gap-2 rounded-lg">

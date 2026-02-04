@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import React from "react";
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useUIStore } from "../../store/UiStore";
 import { useAuthStore } from "../../store/authStore";
 import ConfirmLogoutModal from './../auth/ConfirmLogoutModal';
@@ -38,6 +38,8 @@ const userItems = [
 const SidebarItems = () => {
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const navigate = useNavigate();
 
   const open = useUIStore((s) => s.open);
   const logout = useAuthStore((s) => s.logout);
