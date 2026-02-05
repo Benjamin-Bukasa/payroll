@@ -8,12 +8,16 @@ import ProfileTab from "./tabs/ProfileTab";
 import ContractTab from "./tabs/ContractTab";
 import PayrollTab from "./tabs/PayrollTab";
 import AttendanceTab from "./tabs/AttendanceTab";
+import LeavesTab from './tabs/LeavesTab';
+import DisciplineTab from './tabs/DisciplineTab';
 
 const TABS = [
   { key: "profile", label: "Profil" },
   { key: "contract", label: "Contrat" },
   { key: "payroll", label: "Paie" },
   { key: "attendance", label: "Présences" },
+  { key: "leaves", label: "Congés" },
+  { key: "discipline", label: "Discipline" },
 ];
 
 const EmployeeEditForm = () => {
@@ -160,8 +164,10 @@ const EmployeeEditForm = () => {
         <div className="bg-white border rounded-lg p-6">
           {activeTab === "profile" && <ProfileTab />}
           {activeTab === "contract" && <ContractTab />}
-          {activeTab === "payroll" && <PayrollTab />}
+          {activeTab === "Congé" && <LeavesTab/>}
           {activeTab === "attendance" && <AttendanceTab />}
+          {activeTab === "payroll" && <PayrollTab />}
+          {activeTab === "Discipline" && <DisciplineTab/>}
         </div>
       </form>
     </FormProvider>

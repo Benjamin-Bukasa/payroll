@@ -23,7 +23,7 @@ const EmployeeTable = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="h-full bg-white">
+    <div className="flex flex-col items-start justify-start">
       <table className="w-full text-[12px]">
         <thead className="bg-neutral-50 border-b font-medium">
           <tr>

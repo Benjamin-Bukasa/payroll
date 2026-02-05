@@ -31,6 +31,7 @@ import EmployeeEditForm from './../components/blocs/employees/EmployeeEditForm';
 import AttendanceForm from "../components/blocs/Attendances/AttendanceForm";
 import CreateAttendance from "../pages/dashboard/CreateAttendance";
 import SmigCreateForm from "../components/blocs/Attendances/smig/SmigCreateForm";
+import PayrollSettings from "../components/Settings/PayrollSettings";
 
 
 export const router = createBrowserRouter([
@@ -78,8 +79,17 @@ export const router = createBrowserRouter([
               {element: <div>Billing Settings</div>, path: "billing"},
               {element: <div>Security Settings</div>, path: "security"},
               {element: <div>Notifications Settings</div>, path: "notifications"},
-              {element: <div>Payroll Settings</div>, path: "payroll"},
-              {element: <SmigCreateForm/>, path: "smig"},
+              {element: <PayrollSettings/>, path:"payroll",
+                children:[
+                  {index: true, element:<div>Hello world </div>},
+                  {element: <div>Variables de paie</div>, path: "variables"},
+                  {element: <div>Bulletin de paie</div>, path: "paybilling"},
+                  {element: <div>Devises</div>, path: "currency"},
+                  {element: <div>Horaire Entreprises</div>, path: "schedule"},
+                  {element: <div>Taxes et Impôts</div>, path: "taxes"},
+                  {element: <SmigCreateForm/>, path: "smig"},
+                ]
+              },
 
             ]
           },

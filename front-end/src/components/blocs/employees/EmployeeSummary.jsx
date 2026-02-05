@@ -55,7 +55,7 @@ const EmployeeSummary = () => {
   }
 
   return (
-    <div className="flex border gap-4 w-full md:w-full">
+    <div className="flex gap-4 w-full md:w-full">
       {/* TOTAL */}
       <div className="w-1/4 bg-white border rounded-lg p-4 flex flex-col gap-1">
         <div className="w-10 h-10 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-lg">

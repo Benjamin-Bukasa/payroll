@@ -9,7 +9,8 @@ import {
   listAttendanceByEmployee,
   updateAttendance,
   deleteAttendance,
-  listAttendances
+  listAttendances,
+  createAttendanceManual
 } from "../controllers/attendance.js";
 
 import {downloadAttendanceTemplate,} from "../controllers/attendanceTemplate.js";
@@ -28,6 +29,8 @@ router.use(authMiddleware);
 router.use(checkRole("SUPER_ADMIN", "ADMIN", "MANAGER"));
 
 router.get("/", listAttendances);
+
+router.post("/create", createAttendanceManual );
 
 router.post("/clock-in", clockIn);
 
