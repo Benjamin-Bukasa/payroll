@@ -61,7 +61,7 @@ const HomeSummary = () => {
   return (
     <div className="sm:w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
       {/* ACTIFS */}
-      <div className="w-full flex flex-col gap-1 bg-white border rounded-lg p-4">
+      <div className="w-full flex flex-col gap-1  border rounded-lg p-4">
         <div className="w-10 h-10 flex items-center justify-center text-green-600 bg-green-100 rounded-lg">
           <Users />
         </div>
@@ -74,7 +74,7 @@ const HomeSummary = () => {
       </div>
 
       {/* INACTIFS */}
-      <div className="w-full flex flex-col gap-1 bg-white border rounded-lg p-4">
+      <div className="w-full flex flex-col gap-1  border rounded-lg p-4">
         <div className="w-10 h-10 flex items-center justify-center text-yellow-600 bg-yellow-100 rounded-lg">
           <Users />
         </div>
@@ -87,7 +87,7 @@ const HomeSummary = () => {
       </div>
 
       {/* SUSPENDUS */}
-      <div className="w-full flex flex-col gap-1 bg-white border rounded-lg p-4">
+      <div className="w-full flex flex-col gap-1  border rounded-lg p-4">
         <div className="w-10 h-10 flex items-center justify-center text-red-600 bg-red-100 rounded-lg">
           <UserX />
         </div>
@@ -100,7 +100,7 @@ const HomeSummary = () => {
       </div>
 
       {/* CONGÉS (placeholder) */}
-      <div className="w-full flex flex-col gap-1 bg-white border rounded-lg p-4">
+      <div className="w-full flex flex-col gap-1  border rounded-lg p-4">
         <div className="w-10 h-10 flex items-center justify-center text-blue-600 bg-blue-100 rounded-lg">
           <LogOutIcon />
         </div>

@@ -64,7 +64,7 @@ const EmployeesChart = () => {
   }
 
   return (
-    <div className="sm:w-full md:w-full bg-white border rounded-xl p-2">
+    <div className="sm:w-full md:w-full  border rounded-xl p-2">
       <h3 className="text-sm font-semibold text-neutral-700 mb-1">
         Statut des employés
       </h3>

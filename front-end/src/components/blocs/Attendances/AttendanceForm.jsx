@@ -12,27 +12,29 @@ const AttendanceForm = () => {
 
   const selectedCompanyId = watch("clientCompanyId");
 
-  const onSubmit = async (data) => {
-    try {
-      const payload = {
+ const onSubmit = async (data) => {
+  try {
+    await api.post(
+      "/employeeAttendance/create",
+      {
         employeeId: data.employeeId,
-        startTime: new Date(data.checkIn).toISOString(),
-        endTime: data.checkOut
-          ? new Date(data.checkOut).toISOString()
-          : null,
-      };
+        checkIn: data.checkIn,
+        checkOut: data.checkOut,
+        periodStart: data.periodStart,
+        periodEnd: data.periodEnd,
+      }
+    );
 
-      await api.post("/employeeAttendance", payload);
+    alert("Pointage enregistré avec succès ✅");
+  } catch (err) {
+    console.error(err);
+    alert(
+      err.response?.data?.message ||
+        "Erreur lors de l’enregistrement"
+    );
+  }
+};
 
-      alert("Pointage enregistré ✅");
-    } catch (err) {
-      console.error(err);
-      alert(
-        err.response?.data?.message ||
-          "Erreur lors de l’enregistrement du pointage"
-      );
-    }
-  };
 
   return (
     <form

@@ -61,7 +61,7 @@ const ClientCompanyDonutChart = () => {
   }
 
   return (
-    <div className="bg-white border rounded-xl p-4 w-full">
+    <div className=" border rounded-xl p-4 w-full">
       <h3 className="text-sm font-semibold text-neutral-700 mb-4">
         Répartition des entreprises par agents
       </h3>

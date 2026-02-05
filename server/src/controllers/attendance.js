@@ -304,3 +304,104 @@ export const listAttendances = async (req, res) => {
     });
   }
 };
+
+
+/* ======================================================
+   CREATE ATTENDANCE (MANUEL / FORMULAIRE)
+====================================================== */
+export const createAttendanceManual = async (req, res) => {
+  try {
+    const {
+      employeeId,
+      checkIn,
+      checkOut,
+      periodStart,
+      periodEnd,
+    } = req.body;
+
+    if (!employeeId || !checkIn) {
+      return res.status(400).json({
+        message: "employeeId et checkIn sont requis",
+      });
+    }
+
+    const employee = await prisma.employee.findUnique({
+      where: { id: employeeId },
+      include: {
+        clientCompany: {
+          include: { hrSettings: true },
+        },
+      },
+    });
+
+    if (!employee) {
+      return res.status(404).json({
+        message: "Employé introuvable",
+      });
+    }
+
+    const startTime = new Date(checkIn);
+    const endTime = checkOut ? new Date(checkOut) : null;
+
+    let workedHours = null;
+    let normalHours = null;
+    let overtimeHours = null;
+
+    if (endTime) {
+      workedHours = diffHours(startTime, endTime);
+      normalHours = Math.min(8, workedHours);
+      overtimeHours = Math.max(0, workedHours - 8);
+    }
+
+    // 🧠 Statuts
+    let attendanceStatus = "PRESENT";
+    let lateStatus = "ON_TIME";
+
+    const settings = employee.clientCompany.hrSettings;
+
+    if (settings) {
+      const scheduledStart = new Date(startTime);
+      scheduledStart.setHours(8, 0, 0, 0);
+
+      const lateMinutes =
+        (startTime - scheduledStart) / (1000 * 60);
+
+      if (lateMinutes > settings.absenceAfterMinutes) {
+        attendanceStatus = "ABSENT";
+      } else if (
+        lateMinutes > settings.lateToleranceMinutes
+      ) {
+        lateStatus = "LATE";
+      }
+    }
+
+    const attendance = await prisma.attendance.create({
+      data: {
+        employeeId,
+        startTime,
+        endTime,
+        startedDay: getWeekDay(startTime),
+        endedDay: endTime ? getWeekDay(endTime) : null,
+        workedHours,
+        normalHours,
+        overtimeHours,
+        attendanceStatus,
+        lateStatus,
+      },
+    });
+
+    await createAuditLog({
+      userId: req.user.id,
+      action: "CREATE_ATTENDANCE",
+      entity: "Attendance",
+      entityId: attendance.id,
+    });
+
+    res.status(201).json(attendance);
+  } catch (error) {
+    console.error("Create attendance manual error:", error);
+    res.status(500).json({
+      message: "Impossible de créer le pointage",
+    });
+  }
+};

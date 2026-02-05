@@ -8,7 +8,7 @@ import ClientCompanyBySectorDonut from "../../components/blocs/Companies/ClientC
 
 function ClientCompanies() {
   return (
-    <div className="h-full flex flex-col xl:flex-row gap-4 p-4 border">
+    <div className="h-full flex flex-col xl:flex-row gap-4 p-4">
       
       {/* ===== GAUCHE ===== */}
       <div className="w-full xl:w-2/3 flex flex-col gap-4 ">
@@ -27,21 +27,19 @@ function ClientCompanies() {
 
       {/* ===== DROITE ===== */}
       <div className="w-full xl:w-1/3 flex flex-col gap-4">
-        
+        {/* CREATE */}
+        <div className="rounded-lg border p-3">
+          <h3 className="text-lg font-semibold pb-2 mb-3 border-b text-indigo-600">
+            Ajouter une entreprise
+          </h3>
+          <CreateClientCompanyForm/>
+        </div>
         {/* IMPORT */}
         <div className="rounded-lg border p-3">
           <h3 className="text-lg font-semibold pb-2 mb-3 border-b text-indigo-600">
             Importer des entreprises
           </h3>
           <ImportClientCompanyForm />
-        </div>
-
-        {/* CREATE */}
-        <div className="rounded-lg border p-3">
-          <h3 className="text-lg font-semibold pb-2 mb-3 border-b text-indigo-600">
-            Ajouter une entreprise
-          </h3>
-          <ClientCompanyBySectorDonut/>
         </div>
       </div>
     </div>

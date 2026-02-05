@@ -9,9 +9,9 @@ import AttendanceTable from '../../components/blocs/Attendances/AttendanceTable'
 function Attendance() {
   return (
     <section className='h-full flex items-start justify-start gap-4 p-2'>
-      <div className="flex flex-1 flex-col gap-2">
+      <div className="h-full flex flex-1 flex-col gap-2">
         <AttendancesSummary/>
-        <ScrollArea className={"h-[670px]"}>
+        <ScrollArea className={"h-full"}>
           <h3 className="p-4 font-semibold text-lg">Liste de pointages</h3>
           <AttendanceTable/>
         </ScrollArea>
