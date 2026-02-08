@@ -29,10 +29,7 @@ const MostAbsentEmployeeCard = () => {
 
       const date = new Date(att.startTime);
 
-      if (
-        date.getMonth() === month &&
-        date.getFullYear() === year
-      ) {
+      if (date.getMonth() === month && date.getFullYear() === year) {
         const emp = att.employee;
 
         if (!absenceMap[emp.id]) {
@@ -46,24 +43,20 @@ const MostAbsentEmployeeCard = () => {
       }
     });
 
-    return Object.values(absenceMap).sort(
-      (a, b) => b.count - a.count
-    )[0];
+    return Object.values(absenceMap).sort((a, b) => b.count - a.count)[0];
   }, [attendances]);
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center rounded-lg p-4">
-        <p className="text-sm text-neutral-500">
-          Chargement…
-        </p>
+      <div className="bg-white border rounded-2xl p-5">
+        <p className="text-sm text-neutral-500">Chargement...</p>
       </div>
     );
   }
 
   if (!mostAbsent) {
     return (
-      <div className="h-full flex items-center justify-center rounded-lg p-4">
+      <div className="bg-white border rounded-2xl p-5">
         <p className="text-sm text-neutral-500">
           Aucune absence ce mois
         </p>
@@ -72,21 +65,23 @@ const MostAbsentEmployeeCard = () => {
   }
 
   return (
-    <div className="bg-white border rounded-xl p-4 flex flex-col gap-3">
-      <div className="w-10 h-10 flex items-center justify-center bg-red-100 text-red-600 rounded-lg">
-        <CalendarX />
+    <div className="bg-white border rounded-2xl p-5 flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <div className="w-10 h-10 flex items-center justify-center bg-rose-100 text-rose-600 rounded-lg">
+          <CalendarX />
+        </div>
+        <span className="text-xs text-neutral-400">Ce mois</span>
       </div>
 
-      <p className="text-sm text-neutral-500">
-        Employé le plus absent (ce mois)
+      <p className="text-xs text-neutral-500">
+        Employé le plus absent
       </p>
 
       <p className="text-lg font-semibold text-neutral-900">
-        {mostAbsent.employee.firstname}{" "}
-        {mostAbsent.employee.lastname}
+        {mostAbsent.employee.firstname} {mostAbsent.employee.lastname}
       </p>
 
-      <p className="text-sm text-red-600 font-medium">
+      <p className="text-sm text-rose-600 font-medium">
         {mostAbsent.count} absence(s)
       </p>
 

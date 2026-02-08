@@ -10,6 +10,8 @@ import Home from "../pages/dashboard/Home";
 import Employees from "../pages/dashboard/Employees";
 import ClientCompanies from "../pages/dashboard/ClientCompanies";
 import Attendance from "../pages/dashboard/Attendance";
+import AttendanceOvertime from "../pages/dashboard/AttendanceOvertime";
+import AttendanceDetail from "../pages/dashboard/AttendanceDetail";
 import Payroll from "../pages/dashboard/Payroll";
 import NotFound from "../pages/dashboard/NotFound";
 import Settings from "../pages/dashboard/Settings";
@@ -24,6 +26,7 @@ import ClientCompany from "../components/blocs/Companies/ClientCompany";
 
 // import Settings from './../pages/dashboard/Settings';
 import SetProfile from './../components/Settings/SetProfile';
+import CompanySettings from "../components/Settings/CompanySettings";
 import EmployeeCreateForm from "../components/blocs/employees/EmployeeCreateForm";
 import VerifyEmail from "../pages/auth/VerifyEmail";
 import EmployeeDetails from './../components/blocs/employees/EmployeeDetails';
@@ -32,6 +35,8 @@ import AttendanceForm from "../components/blocs/Attendances/AttendanceForm";
 import CreateAttendance from "../pages/dashboard/CreateAttendance";
 import SmigCreateForm from "../components/blocs/Attendances/smig/SmigCreateForm";
 import PayrollSettings from "../components/Settings/PayrollSettings";
+import PayrollSettingsVariables from "../components/Settings/PayrollSettingsVariables";
+import PayrollPeriodSchedule from "../components/Settings/PayrollPeriodSchedule";
 
 
 export const router = createBrowserRouter([
@@ -63,6 +68,8 @@ export const router = createBrowserRouter([
           { path: "/client-companies", element: <ClientCompanies />},
           { path: "/client-companies/:clientCompanyId", element: <ClientCompany />},
           { path: "/attendance", element: <Attendance /> },
+          { path: "/attendance/overtime", element: <AttendanceOvertime /> },
+          { path: "/attendance/:attendanceId", element: <AttendanceDetail /> },
           { path: "/createAttendance", element: <CreateAttendance/>},
           { path: "/leaves", element: <Leaves/> },
           { path: "/payroll", element: <Payroll /> },
@@ -75,17 +82,17 @@ export const router = createBrowserRouter([
               {index: true, element: <SetProfile/>},
               {element: <SetProfile/>, path: "profile"},
               {element: <SetProfile/>, path: "profile/:id"},
-              {element: <div>Account Settings</div>, path: "company"},
+              {element: <CompanySettings/>, path: "company"},
               {element: <div>Billing Settings</div>, path: "billing"},
               {element: <div>Security Settings</div>, path: "security"},
               {element: <div>Notifications Settings</div>, path: "notifications"},
               {element: <PayrollSettings/>, path:"payroll",
                 children:[
-                  {index: true, element:<div>Hello world </div>},
-                  {element: <div>Variables de paie</div>, path: "variables"},
+                  {index:true, element: <PayrollSettingsVariables/>},
+                  {element: <PayrollSettingsVariables/>, path: "variables"},
                   {element: <div>Bulletin de paie</div>, path: "paybilling"},
                   {element: <div>Devises</div>, path: "currency"},
-                  {element: <div>Horaire Entreprises</div>, path: "schedule"},
+                  {element: <PayrollPeriodSchedule/>, path: "schedule"},
                   {element: <div>Taxes et Impôts</div>, path: "taxes"},
                   {element: <SmigCreateForm/>, path: "smig"},
                 ]

@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  listPayrollSettings,
   getPayrollSetting,
   createPayrollSetting,
   updatePayrollSetting,
@@ -22,10 +23,10 @@ router.use(checkRole("SUPER_ADMIN", "ADMIN", "MANAGER"));
 ========================= */
 
 // GET by ClientCompany
-router.get(
-  "/:clientCompanyId",
-  getPayrollSetting
-);
+router.get("/", listPayrollSettings);
+
+// GET by ClientCompany
+router.get("/:clientCompanyId", getPayrollSetting);
 
 // CREATE
 router.post(

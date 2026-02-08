@@ -32,7 +32,7 @@ const UserProfileCard = () => {
             <p className="font-medium text-neutral-900">
               {user.firstname} {user.lastname}
             </p>
-            <p className="text-neutral-500">{user.role}</p>
+            <p className="text-neutral-500">{user.position}</p>
           </div>
         )}
       </div>

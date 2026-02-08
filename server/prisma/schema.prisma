@@ -104,6 +104,8 @@ model User {
   password      String
   firstname     String
   lastname      String
+  familyname    String?
+  position      String?
   phone         String?
   avatar        String?
 
@@ -206,6 +208,7 @@ model ClientCompany {
 
   employees           Employee[]
   schedule            ClientCompanySchedule?
+  payrollPeriods      PayrollPeriod[]
   hrSettings          HRSettings?
 
   createdAt           DateTime @default(now())
@@ -347,10 +350,14 @@ model PayrollPeriod {
   startDate   DateTime
   endDate     DateTime
   isClosed    Boolean  @default(false)
+  clientCompanyId String?
+  clientCompany   ClientCompany? @relation(fields: [clientCompanyId], references: [id], onDelete: Cascade)
 
   payrolls    Payroll[]
 
   createdAt   DateTime @default(now())
+
+  @@index([clientCompanyId, startDate])
 }
 
 //////////////////////////

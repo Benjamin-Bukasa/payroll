@@ -10,7 +10,10 @@ import {
   updateAttendance,
   deleteAttendance,
   listAttendances,
-  createAttendanceManual
+  createAttendanceManual,
+  listAttendancesTable,
+  getAttendanceById,
+  recalculateAttendanceOvertime
 } from "../controllers/attendance.js";
 
 import {downloadAttendanceTemplate,} from "../controllers/attendanceTemplate.js";
@@ -34,16 +37,22 @@ router.post("/create", createAttendanceManual );
 
 router.post("/clock-in", clockIn);
 
-router.patch("/clock-out/:attendanceId", clockOut);
-
 router.get("/employee/:employeeId", listAttendanceByEmployee);
 
+router.get("/table", listAttendancesTable)
+
 router.patch("/:attendanceId", updateAttendance);
+
+router.patch("/clock-out/:attendanceId", clockOut);
 
 router.delete("/:attendanceId", deleteAttendance);
 
 router.get("/template/excel",downloadAttendanceTemplate);
 
 router.post("/import",uploadImportFile.single("file"),importAttendance);
+
+router.post("/recalculate", recalculateAttendanceOvertime);
+
+router.get("/:attendanceId", getAttendanceById);
 
 export default router;

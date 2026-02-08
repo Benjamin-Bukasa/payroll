@@ -5,22 +5,59 @@ import ConfirmDeleteModal from "./ConfirmDeleteModal";
 const EmployeeActions = ({ employee, onEdit, onDelete, onView }) => {
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [menuPlacement, setMenuPlacement] = useState("down");
   const ref = useRef(null);
+  const menuRef = useRef(null);
 
   /* =========================
      CLICK OUTSIDE → CLOSE
   ========================= */
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
+    const handlePointerDown = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
         setOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    const handleScroll = () => {
+      setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("scroll", handleScroll, true);
+    return () => {
+      document.removeEventListener(
+        "pointerdown",
+        handlePointerDown,
+        true
+      );
+      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("scroll", handleScroll, true);
+    };
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const updatePlacement = () => {
+      if (!ref.current || !menuRef.current) return;
+      const triggerRect = ref.current.getBoundingClientRect();
+      const menuHeight = menuRef.current.offsetHeight;
+      const spaceBelow =
+        window.innerHeight - triggerRect.bottom;
+      const spaceAbove = triggerRect.top;
+      const shouldOpenUp =
+        spaceBelow < menuHeight && spaceAbove > spaceBelow;
+      setMenuPlacement(shouldOpenUp ? "up" : "down");
+    };
+    requestAnimationFrame(updatePlacement);
+  }, [open]);
 
   return (
     <>
@@ -33,7 +70,14 @@ const EmployeeActions = ({ employee, onEdit, onDelete, onView }) => {
         </button>
 
         {open && (
-          <div className="absolute right-0 mt-2 w-44 bg-white border rounded-lg shadow z-20 overflow-hidden">
+          <div
+            ref={menuRef}
+            className={`absolute right-0 w-44 bg-white border rounded-lg shadow z-20 overflow-hidden animate-scale-in ${
+              menuPlacement === "up"
+                ? "bottom-full mb-2 origin-bottom-right"
+                : "mt-2 origin-top-right"
+            }`}
+          >
             {/* 👁️ DÉTAIL */}
             <button
               onClick={() => {

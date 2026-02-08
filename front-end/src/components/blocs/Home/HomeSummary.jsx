@@ -34,7 +34,6 @@ const HomeSummary = () => {
     employees.forEach((emp) => {
       const createdAt = new Date(emp.createdAt);
 
-      // 👇 Employé existant durant le mois en cours
       if (createdAt >= startOfMonth && createdAt <= endOfMonth) {
         if (emp.status === "ACTIF") actif++;
         if (emp.status === "INACTIF") inactif++;
@@ -46,70 +45,84 @@ const HomeSummary = () => {
       actif,
       inactif,
       suspendu,
-      conge: 0, // 🔜 à brancher avec Leave plus tard
+      conge: 0,
     };
   }, [employees]);
 
   if (loading) {
     return (
-      <p className="text-sm text-neutral-500">
-        Chargement…
-      </p>
+      <div className="bg-white border rounded-2xl p-5">
+        <p className="text-sm text-neutral-500">
+          Chargement...
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="sm:w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-      {/* ACTIFS */}
-      <div className="w-full flex flex-col gap-1  border rounded-lg p-4">
-        <div className="w-10 h-10 flex items-center justify-center text-green-600 bg-green-100 rounded-lg">
-          <Users />
+    <div className="bg-white border rounded-2xl p-3 h-full flex flex-col overflow-hidden">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-[11px] font-semibold text-neutral-800">
+            Résumé des effectifs
+          </p>
+          <p className="text-[10px] text-neutral-400">
+            Mois en cours
+          </p>
         </div>
-        <p className="text-xl font-semibold text-neutral-900">
-          {stats.actif}
-        </p>
-        <p className="text-sm text-neutral-500">
-          Employés actifs ce mois
-        </p>
+        <span className="text-[10px] text-neutral-400">
+          Actualisé
+        </span>
       </div>
 
-      {/* INACTIFS */}
-      <div className="w-full flex flex-col gap-1  border rounded-lg p-4">
-        <div className="w-10 h-10 flex items-center justify-center text-yellow-600 bg-yellow-100 rounded-lg">
-          <Users />
+      <div className="mt-2 grid grid-cols-2 gap-2 flex-1 min-h-0 auto-rows-fr">
+        <div className="w-full flex flex-col gap-1 border rounded-lg bg-neutral-50 p-2 min-h-0 overflow-hidden">
+          <div className="w-7 h-7 flex items-center justify-center text-green-600 bg-green-100 rounded-md">
+            <Users size={14} />
+          </div>
+          <p className="text-base font-semibold text-neutral-900 leading-tight">
+            {stats.actif}
+          </p>
+          <p className="text-[10px] text-neutral-500 leading-tight">
+            Actifs
+          </p>
         </div>
-        <p className="text-xl font-semibold text-neutral-900">
-          {stats.inactif}
-        </p>
-        <p className="text-sm text-neutral-500">
-          Employés inactifs ce mois
-        </p>
-      </div>
 
-      {/* SUSPENDUS */}
-      <div className="w-full flex flex-col gap-1  border rounded-lg p-4">
-        <div className="w-10 h-10 flex items-center justify-center text-red-600 bg-red-100 rounded-lg">
-          <UserX />
+        <div className="w-full flex flex-col gap-1 border rounded-lg bg-neutral-50 p-2 min-h-0 overflow-hidden">
+          <div className="w-7 h-7 flex items-center justify-center text-yellow-600 bg-yellow-100 rounded-md">
+            <Users size={14} />
+          </div>
+          <p className="text-base font-semibold text-neutral-900 leading-tight">
+            {stats.inactif}
+          </p>
+          <p className="text-[10px] text-neutral-500 leading-tight">
+            Inactifs
+          </p>
         </div>
-        <p className="text-xl font-semibold text-neutral-900">
-          {stats.suspendu}
-        </p>
-        <p className="text-sm text-neutral-500">
-          Employés suspendus ce mois
-        </p>
-      </div>
 
-      {/* CONGÉS (placeholder) */}
-      <div className="w-full flex flex-col gap-1  border rounded-lg p-4">
-        <div className="w-10 h-10 flex items-center justify-center text-blue-600 bg-blue-100 rounded-lg">
-          <LogOutIcon />
+        <div className="w-full flex flex-col gap-1 border rounded-lg bg-neutral-50 p-2 min-h-0 overflow-hidden">
+          <div className="w-7 h-7 flex items-center justify-center text-red-600 bg-red-100 rounded-md">
+            <UserX size={14} />
+          </div>
+          <p className="text-base font-semibold text-neutral-900 leading-tight">
+            {stats.suspendu}
+          </p>
+          <p className="text-[10px] text-neutral-500 leading-tight">
+            Suspendus
+          </p>
         </div>
-        <p className="text-xl font-semibold text-neutral-900">
-          {stats.conge}
-        </p>
-        <p className="text-sm text-neutral-500">
-          Employés en congé ce mois
-        </p>
+
+        <div className="w-full flex flex-col gap-1 border rounded-lg bg-neutral-50 p-2 min-h-0 overflow-hidden">
+          <div className="w-7 h-7 flex items-center justify-center text-blue-600 bg-blue-100 rounded-md">
+            <LogOutIcon size={14} />
+          </div>
+          <p className="text-base font-semibold text-neutral-900 leading-tight">
+            {stats.conge}
+          </p>
+          <p className="text-[10px] text-neutral-500 leading-tight">
+            Congés
+          </p>
+        </div>
       </div>
     </div>
   );

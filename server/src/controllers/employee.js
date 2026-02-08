@@ -214,6 +214,7 @@ export const updateEmployee = async (req, res) => {
     baseSalary,
     status,
     smigId, // optionnel
+    clientCompanyId,
   } = req.body;
 
   const data = {
@@ -237,6 +238,46 @@ export const updateEmployee = async (req, res) => {
   if (smigId) {
     data.smig = {
       connect: { id: smigId },
+    };
+  }
+
+  // ✅ CHANGER L'ENTREPRISE CLIENTE
+  if (
+    clientCompanyId &&
+    clientCompanyId !== employee.clientCompanyId
+  ) {
+    const targetCompany = await prisma.clientCompany.findUnique({
+      where: { id: clientCompanyId },
+      select: {
+        id: true,
+        companyId: true,
+        managerId: true,
+      },
+    });
+
+    if (!targetCompany) {
+      return res.status(404).json({
+        message: "Client company not found",
+      });
+    }
+
+    if (targetCompany.companyId !== req.user.companyId) {
+      return res.status(403).json({
+        message: "Access denied",
+      });
+    }
+
+    if (
+      req.user.role === "MANAGER" &&
+      targetCompany.managerId !== req.user.id
+    ) {
+      return res.status(403).json({
+        message: "Access denied",
+      });
+    }
+
+    data.clientCompany = {
+      connect: { id: clientCompanyId },
     };
   }
 
@@ -294,4 +335,164 @@ export const deleteEmployee = async (req, res) => {
   });
 
   res.json({ message: "Employee deleted" });
+};
+
+/**
+ * =========================
+ * GET EMPLOYEE AVATAR
+ * =========================
+ */
+export const getEmployeeAvatar = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+
+    const employee = await prisma.employee.findUnique({
+      where: { id: employeeId },
+      include: { clientCompany: true },
+    });
+
+    if (
+      !employee ||
+      employee.clientCompany.companyId !== req.user.companyId
+    ) {
+      return res.status(404).json({
+        message: "Employee not found",
+      });
+    }
+
+    if (
+      req.user.role === "MANAGER" &&
+      employee.clientCompany.managerId !== req.user.id
+    ) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    res.json({ avatar: employee.avatar });
+  } catch (error) {
+    console.error("Get employee avatar error:", error);
+    res.status(500).json({
+      message: "Unable to fetch employee avatar",
+    });
+  }
+};
+
+/**
+ * =========================
+ * UPDATE EMPLOYEE AVATAR
+ * =========================
+ */
+export const updateEmployeeAvatar = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+
+    const employee = await prisma.employee.findUnique({
+      where: { id: employeeId },
+      include: { clientCompany: true },
+    });
+
+    if (
+      !employee ||
+      employee.clientCompany.companyId !== req.user.companyId
+    ) {
+      return res.status(404).json({
+        message: "Employee not found",
+      });
+    }
+
+    if (
+      req.user.role === "MANAGER" &&
+      employee.clientCompany.managerId !== req.user.id
+    ) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    if (!req.file?.path) {
+      return res.status(400).json({
+        message: "Avatar file is required",
+      });
+    }
+
+    const updated = await prisma.employee.update({
+      where: { id: employeeId },
+      data: {
+        avatar: req.file.path,
+      },
+      select: {
+        id: true,
+        avatar: true,
+      },
+    });
+
+    await createAuditLog({
+      userId: req.user.id,
+      action: "UPDATE_EMPLOYEE_AVATAR",
+      entity: "Employee",
+      entityId: employeeId,
+    });
+
+    res.json({
+      message: "Avatar updated",
+      avatar: updated.avatar,
+    });
+  } catch (error) {
+    console.error("Update employee avatar error:", error);
+    res.status(500).json({
+      message: "Unable to update avatar",
+    });
+  }
+};
+
+/**
+ * =========================
+ * DELETE EMPLOYEE AVATAR
+ * =========================
+ */
+export const deleteEmployeeAvatar = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+
+    const employee = await prisma.employee.findUnique({
+      where: { id: employeeId },
+      include: { clientCompany: true },
+    });
+
+    if (
+      !employee ||
+      employee.clientCompany.companyId !== req.user.companyId
+    ) {
+      return res.status(404).json({
+        message: "Employee not found",
+      });
+    }
+
+    if (
+      req.user.role === "MANAGER" &&
+      employee.clientCompany.managerId !== req.user.id
+    ) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const updated = await prisma.employee.update({
+      where: { id: employeeId },
+      data: { avatar: null },
+      select: { id: true, avatar: true },
+    });
+
+    await createAuditLog({
+      userId: req.user.id,
+      action: "DELETE_EMPLOYEE_AVATAR",
+      entity: "Employee",
+      entityId: employeeId,
+    });
+
+    res.json({
+      message: "Avatar deleted",
+      avatar: updated.avatar,
+    });
+  } catch (error) {
+    console.error("Delete employee avatar error:", error);
+    res.status(500).json({
+      message: "Unable to delete avatar",
+    });
+  }
 };
