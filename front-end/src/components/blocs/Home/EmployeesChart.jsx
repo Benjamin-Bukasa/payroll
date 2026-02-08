@@ -19,7 +19,6 @@ const EmployeesChart = () => {
     fetchEmployees();
   }, [fetchEmployees]);
 
-  // 🔄 Agrégation par statut (mois en cours)
   const data = useMemo(() => {
     const now = new Date();
     const endOfMonth = new Date(
@@ -39,7 +38,6 @@ const EmployeesChart = () => {
 
     employees.forEach((emp) => {
       const createdAt = new Date(emp.createdAt);
-
       if (createdAt <= endOfMonth && stats[emp.status] !== undefined) {
         stats[emp.status]++;
       }
@@ -57,53 +55,62 @@ const EmployeesChart = () => {
 
   if (loading) {
     return (
-      <p className="text-sm text-neutral-500">
-        Chargement des statistiques…
-      </p>
+      <div className="bg-white border rounded-2xl p-5">
+        <p className="text-sm text-neutral-500">
+          Chargement des statistiques...
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="sm:w-full md:w-full  border rounded-xl p-2">
-      <h3 className="text-sm font-semibold text-neutral-700 mb-1">
-        Statut des employés
-      </h3>
-      <p className="text-xs text-neutral-500 mb-4">
-        Mois en cours
-      </p>
+    <div className="bg-white border rounded-2xl p-4 h-full flex flex-col overflow-hidden">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-neutral-800">
+            Statut des employés
+          </h3>
+          <p className="text-xs text-neutral-400">
+            Mois en cours
+          </p>
+        </div>
+        <span className="text-xs text-neutral-400">
+          Comparaison
+        </span>
+      </div>
 
-      <ResponsiveContainer width="100%" height={165}>
-        <BarChart data={data}>
-          <CartesianGrid stroke="#E5E7EB" strokeDasharray="2 6" vertical={false} />
-          <XAxis dataKey="name" hide />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
+      <div className="mt-3 flex-1 min-h-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data}>
+            <CartesianGrid
+              stroke="#E5E7EB"
+              strokeDasharray="2 6"
+              vertical={false}
+            />
+            <XAxis dataKey="name" hide />
+            <YAxis allowDecimals={false} />
+            <Tooltip />
 
-          {/* ACTIF */}
-          <Bar
-            dataKey="ACTIF"
-            fill="#4F46E5" // indigo-600
-            radius={[6, 6, 0, 0]}
-          />
+            <Bar
+              dataKey="ACTIF"
+              fill="#4F46E5"
+              radius={[6, 6, 0, 0]}
+            />
+            <Bar
+              dataKey="INACTIF"
+              fill="#A5B4FC"
+              radius={[6, 6, 0, 0]}
+            />
+            <Bar
+              dataKey="SUSPENDU"
+              fill="#D4D4D4"
+              radius={[6, 6, 0, 0]}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
-          {/* INACTIF */}
-          <Bar
-            dataKey="INACTIF"
-            fill="#A5B4FC" // indigo-300
-            radius={[6, 6, 0, 0]}
-          />
-
-          {/* SUSPENDU */}
-          <Bar
-            dataKey="SUSPENDU"
-            fill="#D4D4D4" // neutral-300
-            radius={[6, 6, 0, 0]}
-          />
-        </BarChart>
-      </ResponsiveContainer>
-
-      {/* 🔽 LÉGENDE CUSTOM */}
-      <div className="mt-4 flex items-center justify-center gap-6 text-[12px]">
+      <div className="mt-2 flex items-center justify-center gap-4 text-[11px]">
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-sm bg-indigo-600" />
           <span className="text-neutral-700">Actifs</span>

@@ -8,20 +8,29 @@ import {
   listUsers,
   updateUser,
   deleteUser,
-  updateMyProfile
+  updateMyProfile,
+  deleteMyAccount
 } from "../controllers/user.js";
 
 const router = express.Router();
 
 router.use(authMiddleware);
-router.use(checkRole("SUPER_ADMIN", "ADMIN"));
 
+// self profile
+router.patch("/me", updateMyProfile);
+router.patch(
+  "/me/avatar",
+  uploadAvatar.single("avatar"),
+  updateMyProfile
+);
+router.delete("/me", deleteMyAccount);
+
+// admin routes
+router.use(checkRole("SUPER_ADMIN", "ADMIN"));
 router.post("/create-user", checkUserLimit, createUser);
 router.get("/getAll-users", listUsers);
 router.patch("/:userId", updateUser);
 router.delete("/:userId", deleteUser);
-
-router.patch("/me/avatar",uploadAvatar.single("avatar"),updateMyProfile);
 
 
 export default router;

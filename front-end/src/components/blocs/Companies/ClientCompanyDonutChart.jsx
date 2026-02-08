@@ -9,12 +9,12 @@ import {
 import { useClientCompanyStore } from "../../../store/clientCompanyStore";
 
 const COLORS = [
-  "#6366f1", // indigo
-  "#22c55e", // green
-  "#f59e0b", // amber
-  "#ef4444", // red
-  "#06b6d4", // cyan
-  "#a855f7", // purple
+  "#6366f1",
+  "#22c55e",
+  "#f59e0b",
+  "#ef4444",
+  "#06b6d4",
+  "#a855f7",
 ];
 
 const ClientCompanyDonutChart = () => {
@@ -46,37 +46,48 @@ const ClientCompanyDonutChart = () => {
 
   if (loading) {
     return (
-      <p className="text-sm text-neutral-500">
-        Chargement…
-      </p>
+      <div className="bg-white border rounded-2xl p-4 h-full flex flex-col justify-center">
+        <p className="text-sm text-neutral-500">Chargement...</p>
+      </div>
     );
   }
 
   if (data.length === 0) {
     return (
-      <p className="text-sm text-neutral-400">
-        Aucune donnée disponible
-      </p>
+      <div className="bg-white border rounded-2xl p-4 h-full flex flex-col justify-center">
+        <p className="text-sm text-neutral-400">
+          Aucune donnée disponible
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className=" border rounded-xl p-4 w-full">
-      <h3 className="text-sm font-semibold text-neutral-700 mb-4">
-        Répartition des entreprises par agents
-      </h3>
+    <div className="bg-white border rounded-2xl p-4 w-full h-full flex flex-col overflow-hidden">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-neutral-800">
+            Répartition des entreprises
+          </h3>
+          <p className="text-xs text-neutral-400">
+            Agents par entreprise
+          </p>
+        </div>
+        <span className="text-[11px] text-neutral-400">Mois en cours</span>
+      </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* DONUT */}
-        <div className="relative w-full lg:w-1/2 h-[260px]">
+      <div className="mt-3 grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-4 flex-1 min-h-0">
+        <div className="relative w-full h-[200px] sm:h-[220px] lg:h-full min-h-[200px] flex items-center justify-center">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={3}
+                innerRadius="55%"
+                outerRadius="80%"
+                paddingAngle={2}
                 dataKey="value"
+                stroke="white"
+                strokeWidth={2}
               >
                 {data.map((_, index) => (
                   <Cell
@@ -95,7 +106,6 @@ const ClientCompanyDonutChart = () => {
             </PieChart>
           </ResponsiveContainer>
 
-          {/* TOTAL AU CENTRE */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
             <p className="text-xl font-semibold text-neutral-900">
               {totalEmployees}
@@ -106,37 +116,33 @@ const ClientCompanyDonutChart = () => {
           </div>
         </div>
 
-        {/* LÉGENDE */}
-        <div className="w-full lg:w-1/2 flex flex-col justify-center gap-1">
+        <div className="w-full min-w-0 flex flex-col justify-center gap-2">
           {data.map((item, index) => {
-            const percent = (
-              (item.value / totalEmployees) *
-              100
-            ).toFixed(1);
+            const percent = ((item.value / totalEmployees) * 100).toFixed(1);
 
             return (
               <div
                 key={item.name}
-                className="flex items-center justify-start gap-3 text-sm"
+                className="flex items-center justify-between gap-2 text-[11px] min-w-0"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <span
                     className="w-3 h-3 rounded-full"
                     style={{
-                      backgroundColor:
-                        COLORS[index % COLORS.length],
+                      backgroundColor: COLORS[index % COLORS.length],
                     }}
                   />
-                  <span className="text-neutral-700 text-[10px] font-medium truncate">
+                  <span
+                    className="text-neutral-700 font-medium truncate"
+                    title={item.name}
+                  >
                     {item.name}
                   </span>
                 </div>
 
-                <div className="flex items-center  gap-4 text-neutral-500 text-[10px] text-left">
+                <div className="flex items-center gap-2 text-neutral-500">
                   <span>{item.value} agents</span>
-                  <span className="text-neutral-400">
-                    {percent}%
-                  </span>
+                  <span className="text-neutral-400">{percent}%</span>
                 </div>
               </div>
             );

@@ -5,10 +5,26 @@ import {
   createEmployee as createEmployeeApi,
   updateEmployee,
   deleteEmployee,
+  updateEmployeeAvatar as updateEmployeeAvatarApi,
+  deleteEmployeeAvatar as deleteEmployeeAvatarApi,
 } from "../api/employee";
 import api from "../api/axios";
 
 export const useEmployeeStore = create((set, get) => ({
+  /* =========================
+     HELPERS
+  ========================= */
+  // Normalize avatar payloads to URL strings when needed
+  _normalizeAvatar: (value) => {
+    if (!value) return null;
+    if (typeof value === "string") return value;
+    return (
+      value.secure_url ||
+      value.url ||
+      value.path ||
+      null
+    );
+  },
   /* =========================
      STATE
   ========================= */
@@ -116,6 +132,54 @@ export const useEmployeeStore = create((set, get) => ({
           err?.response?.data?.message ||
           "Erreur lors de la suppression",
       });
+    }
+  },
+
+  /* =========================
+     UPDATE EMPLOYEE AVATAR
+  ========================= */
+  updateEmployeeAvatar: async (id, file) => {
+    try {
+      const updated = await updateEmployeeAvatarApi(id, file);
+      const avatarUrl = get()._normalizeAvatar(
+        updated?.avatar
+      );
+      set((state) => ({
+        employees: state.employees.map((e) =>
+          e.id === id ? { ...e, avatar: avatarUrl } : e
+        ),
+      }));
+      return { ...updated, avatar: avatarUrl };
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        "Erreur lors de la mise Ã  jour de la photo";
+      set({
+        error: message,
+      });
+      return { error: message };
+    }
+  },
+
+  /* =========================
+     DELETE EMPLOYEE AVATAR
+  ========================= */
+  deleteEmployeeAvatar: async (id) => {
+    try {
+      const updated = await deleteEmployeeAvatarApi(id);
+      set((state) => ({
+        employees: state.employees.map((e) =>
+          e.id === id ? { ...e, avatar: null } : e
+        ),
+      }));
+      return updated;
+    } catch (err) {
+      set({
+        error:
+          err?.response?.data?.message ||
+          "Erreur lors de la suppression de la photo",
+      });
+      return null;
     }
   },
 }));

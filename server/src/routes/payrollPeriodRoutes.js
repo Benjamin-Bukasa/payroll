@@ -1,6 +1,8 @@
 import express from "express";
 import {
+  listPayrollPeriods,
   getPayrollPeriod,
+  createPayrollPeriod,
   closePayrollPeriod,
   reopenPayrollPeriod,
 } from "../controllers/payrollPeriod.js";
@@ -13,6 +15,18 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Lecture
+router.get(
+  "/",
+  checkRole("SUPER_ADMIN", "ADMIN", "MANAGER"),
+  listPayrollPeriods
+);
+
+router.post(
+  "/",
+  checkRole("SUPER_ADMIN", "ADMIN"),
+  createPayrollPeriod
+);
+
 router.get(
   "/:periodId",
   checkRole("SUPER_ADMIN", "ADMIN", "MANAGER"),
@@ -29,7 +43,7 @@ router.patch(
 // Réouverture (exception)
 router.patch(
   "/:periodId/reopen",
-  checkRole("SUPER_ADMIN"),
+  checkRole("SUPER_ADMIN", "ADMIN"),
   reopenPayrollPeriod
 );
 

@@ -8,7 +8,8 @@ import {
   logout,
   me,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  changePassword
 } from "../controllers/auth.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
@@ -32,6 +33,12 @@ router.get("/me", authMiddleware, me);
 router.post("/forgot-password", forgotPassword);
 
 router.post("/reset-password", resetPassword);
+
+router.patch(
+  "/change-password",
+  authMiddleware,
+  changePassword
+);
 
 
 

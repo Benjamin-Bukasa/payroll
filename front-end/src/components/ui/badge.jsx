@@ -1,6 +1,24 @@
 import React from "react"
 
 const STATUS_CONFIG = {
+  PRESENT: {
+    label: "Présent",
+    bg: "bg-emerald-100",
+    text: "text-emerald-700",
+    dot: "bg-emerald-500",
+  },
+  ABSENT: {
+    label: "Absent",
+    bg: "bg-rose-100",
+    text: "text-rose-700",
+    dot: "bg-rose-500",
+  },
+  LATE: {
+    label: "En retard",
+    bg: "bg-amber-100",
+    text: "text-amber-700",
+    dot: "bg-amber-500",
+  },
   ACTIF: {
     label: "Actif",
     bg: "bg-green-100",

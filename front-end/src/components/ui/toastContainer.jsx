@@ -8,6 +8,15 @@ const icons = {
   info: <Info className="text-blue-600" />,
 };
 
+const formatToastMessage = (message) => {
+  if (typeof message === "string") return message;
+  try {
+    return JSON.stringify(message);
+  } catch {
+    return String(message);
+  }
+};
+
 const ToastContainer = () => {
   const { toasts, removeToast } = useToastStore();
 
@@ -28,7 +37,7 @@ const ToastContainer = () => {
         >
           {icons[toast.type]}
           <p className="text-sm text-neutral-700">
-            {toast.message}
+            {formatToastMessage(toast.message)}
           </p>
         </div>
       ))}

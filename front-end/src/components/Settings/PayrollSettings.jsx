@@ -9,19 +9,12 @@ const PayrollSettings = () => {
             <ul className="p-2 flex items-center justify-between gap-4 bg-neutral-100 text-neutral-700 rounded-lg">
                 <Link to={`variables`} className='rounded-lg bg-white px-4 py-2'><li className="">Variables de paie</li></Link>
                 <Link to={`currency`} className='rounded-lg bg-white px-4 py-2'><li className="">Devise</li></Link>
-                <Link to={`schedule`} className='rounded-lg bg-white px-4 py-2'><li className="">Horaire</li></Link>
+                <Link to={`schedule`} className='rounded-lg bg-white px-4 py-2'><li className="">Periode de paie</li></Link>
                 <Link to={`taxes`} className='rounded-lg bg-white px-4 py-2'><li className="">Taxes et impôt</li></Link>
                 <Link to={`smig`} className='rounded-lg bg-white px-4 py-2'><li className="">Smig</li></Link>
                 <Link to={`paybilling`} className='rounded-lg bg-white px-4 py-2'><li className="">Bulletin de paie</li></Link>
             </ul>
-            <div className="flex items-center justify-between gap-4">
-                <Button buttonStyle={false} className={"px-4 py-2 rounded-lg"}>
-                    Quitter
-                </Button>
-                <Button buttonStyle={true} className={"px-4 py-2 rounded-lg"}>
-                    Enregistrer
-                </Button>
-            </div>
+
         </div>
       <Outlet/>
     </section>

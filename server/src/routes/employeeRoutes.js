@@ -35,7 +35,6 @@ router.get(
   getEmployeeById
 );
 
-
 router.get(
   "/client-company/:clientCompanyId",
   checkClientCompanyAccess,
